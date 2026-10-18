@@ -6,12 +6,11 @@ self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
 self.addEventListener("push", event => {
   let p = {};
   try { const j = event.data ? event.data.json() : {}; p = j.data || j; } catch (e) {}
-  const title = p.title || "طلبك جاهز!";
+  const title = p.title || "طلبك";
   event.waitUntil(self.registration.showNotification(title, {
     body: p.body || "",
     tag: p.tag || "order",          // same tag: a repeat replaces the old one...
     renotify: true,                 // ...but still rings and vibrates again
-    requireInteraction: true,       // stays on screen until the customer taps it
     vibrate: [500, 200, 500, 200, 500, 200, 500],
     icon: "icon.png",
     badge: "icon.png",
