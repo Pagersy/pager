@@ -1,0 +1,42 @@
+/* Shared look for the staff and counter screens.
+   One family (Alexandria) in Arabic and Latin. Amber is reserved for "ready": the pager light. */
+:root{
+  --paper:#EEF1F5; --card:#FFFFFF; --sunk:#F5F7FA; --ink:#142033; --muted:#5B6678; --line:#DAE0E8;
+  --teal:#0E7C72; --teal-ink:#FFFFFF; --teal-soft:#DDF0EC;
+  --amber:#F5A524; --amber-ink:#2E1F00; --amber-soft:#FFF1D6;
+  --good:#1F8A4C; --good-soft:#E1F3E8; --bad:#C2410C; --bad-soft:#FCE7DC;
+  --r-lg:20px; --r:14px; --r-sm:10px;
+  --f:"Alexandria","Segoe UI",Tahoma,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--teal) 55%,transparent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+.btn{border:1px solid var(--line);background:var(--card);border-radius:var(--r-sm);padding:10px 16px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:background .15s,border-color .15s}
+.btn:hover{border-color:#B9C2CF}
+a.btn{color:inherit;text-decoration:none}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+.btn.primary:hover{background:#0B6C63}
+.btn.call{background:var(--amber);border-color:var(--amber);color:var(--amber-ink);font-weight:700}
+.btn.call:hover{background:#E99A16}
+.btn.quiet{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.quiet:hover{background:var(--sunk);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* sign-in */
+.auth{min-height:100%;display:grid;place-items:center;padding:24px 16px;background:var(--paper)}
+.auth-card{position:relative;background:var(--card);border-radius:var(--r-lg);padding:32px 28px 24px;width:min(400px,100%);display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 2px rgba(20,32,51,.06),0 12px 32px -12px rgba(20,32,51,.18);color:var(--ink)}
+.auth-card h1{font-size:24px;font-weight:700;margin:0}
+.auth-card p{margin:0 0 10px;color:var(--muted)}
+.auth-card label{font-size:13px;font-weight:500;margin-top:6px}
+.auth-card input{border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;background:var(--sunk)}
+.auth-card .btn{margin-top:14px;padding:13px}
+.auth-lang{position:absolute;top:16px;inset-inline-end:16px;border:0;background:var(--sunk);border-radius:99px;padding:5px 12px;font-size:13px;color:var(--muted)}
+.err{color:var(--bad);font-size:14px;margin:4px 0 0;min-height:1.2em}
+.fatal{position:fixed;inset-inline:16px;top:16px;z-index:50;background:var(--bad-soft);color:var(--bad);border-radius:var(--r);padding:12px 16px;font-size:14px}
+
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}

@@ -3,105 +3,119 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0B1220">
-<title>شاشة الزبائن</title>
+<meta name="theme-color" content="#101A2C">
+<title>Customer screen · شاشة الزبائن</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;600;700&family=IBM+Plex+Mono:wght@600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="ui.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-:root{--brand:#7A2E3A;--bg:#0B1220;--panel:#141E33;--ink:#EEF2F8;--muted:#8C9AB0;--signal:#F2A900;--line:#24304A;
-  --f:"Readex Pro",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);overflow:hidden}
-button,input{font:inherit;color:inherit}
-/* login (from shared.js) */
-.login{min-height:100%;display:grid;place-items:center;padding:20px}
-.login .card{background:#fff;color:#13213A;border-radius:16px;padding:22px;width:min(380px,100%);display:flex;flex-direction:column;gap:8px}
-.login h1{font-size:20px;margin:0 0 8px}
-.login input{border:1px solid #D6DCE4;border-radius:10px;padding:10px 12px;color:#13213A}
-.login label{font-size:13px;color:#5A6577}
-.login .btn,.btn{border:0;border-radius:10px;padding:11px 14px;background:#0B6E66;color:#fff;font-weight:600;cursor:pointer;margin-top:8px}
-.err{color:#B83434;font-size:14px;margin:0}
-/* screen */
-.screen{height:100%;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:2vw;padding:3vw}
-@media (orientation:portrait){.screen{grid-template-columns:1fr;grid-template-rows:auto 1fr}}
-.left{background:#fff;color:#111;border-radius:2vw;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6vh;padding:3vh 2vw;text-align:center;position:relative;overflow:hidden}
-.left .vn{font-weight:600;font-size:clamp(16px,2vw,28px);color:var(--brand);margin-bottom:1vh}
-.left .lab{font-size:clamp(16px,1.8vw,26px);color:#555}
-.left .no{font-family:var(--mono);font-weight:600;font-size:clamp(48px,8vw,120px);line-height:1;color:var(--brand)}
-.left .qr img,.left .qr canvas{display:block;width:min(34vh,30vw)!important;height:auto!important;image-rendering:pixelated}
-.left .hint{font-size:clamp(15px,1.7vw,24px);max-width:28ch}
-.left .ok{font-size:clamp(28px,4vw,56px);color:#1E7F55;font-weight:700}
-.idle .big{font-size:clamp(28px,3.6vw,52px);font-weight:700;color:var(--brand);max-width:16ch;line-height:1.3}
-.right{background:var(--panel);border-radius:2vw;padding:3vh 2vw;display:flex;flex-direction:column;min-height:0}
-.right h2{margin:0 0 2vh;font-size:clamp(18px,2.2vw,32px);color:var(--muted);font-weight:600}
-.nums{display:flex;flex-wrap:wrap;gap:1.4vw;align-content:flex-start;overflow:hidden}
-.n{font-family:var(--mono);font-weight:600;font-size:clamp(40px,6vw,96px);padding:.3vh 1.6vw;border-radius:1.2vw;background:#1E2A44;line-height:1.15}
-.n.hot{background:var(--signal);color:#1D1600;animation:pulse 1.2s ease-in-out infinite}
-@keyframes pulse{50%{transform:scale(1.06)}}
-.none{color:var(--muted);font-size:clamp(16px,1.8vw,26px)}
-.fs{position:fixed;bottom:12px;inset-inline-start:12px;background:rgba(255,255,255,.08);border:0;color:var(--muted);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
-@media (prefers-reduced-motion: reduce){.n.hot{animation:none}}
+/* Counter screen: dark so the amber "ready" numbers carry across the room. Arabic and English shown together. */
+body.screen-on{background:#101A2C;color:#EEF2F8;overflow:hidden}
+.screen{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);gap:2vh;padding:2.5vh 2.5vw}
+.top{display:flex;align-items:center;gap:1.2vw}
+.top .mark{width:clamp(36px,4vw,60px);height:clamp(36px,4vw,60px);border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:clamp(18px,2vw,30px)}
+.top h1{margin:0;font-size:clamp(20px,2.4vw,40px);font-weight:700}
+.top .clock{margin-inline-start:auto;font-size:clamp(18px,2vw,34px);color:#8B99B1;font-variant-numeric:tabular-nums;direction:ltr}
+.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:2.5vw;min-height:0}
+@media (orientation:portrait){.main{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}}
+.card{background:#fff;color:#142033;border-radius:3vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6vh;padding:3vh 2vw;text-align:center;min-height:0}
+.card .lab{font-size:clamp(15px,1.6vw,26px);color:#5B6678}
+.card .lab span,.en{display:block;font-size:.72em;color:#8892A3;direction:ltr}
+.card .no{font-size:clamp(56px,9vw,150px);font-weight:800;line-height:1;color:var(--brand)}
+.card .qr img,.card .qr canvas{display:block;width:min(36vh,28vw)!important;height:auto!important;image-rendering:pixelated}
+@media (orientation:portrait){.card .qr img,.card .qr canvas{width:min(30vh,60vw)!important}}
+.card .hint{font-size:clamp(16px,1.7vw,28px);max-width:24ch;font-weight:500}
+.card .tick{width:clamp(70px,8vw,130px);height:clamp(70px,8vw,130px);border-radius:50%;background:#E1F3E8;color:#1F8A4C;display:grid;place-items:center;font-size:clamp(36px,4vw,70px);font-weight:800}
+.card.idle .steps{display:flex;flex-direction:column;gap:2.2vh;text-align:start;width:min(100%,30ch)}
+.card.idle .step{display:grid;grid-template-columns:auto 1fr;gap:1.2vw;align-items:center;font-size:clamp(17px,1.9vw,32px);font-weight:500}
+.card.idle .step b{width:clamp(34px,3.4vw,58px);height:clamp(34px,3.4vw,58px);border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:.8em}
+.board{background:#17233A;border-radius:3vh;padding:3vh 2.4vw;display:flex;flex-direction:column;min-height:0}
+.board h2{margin:0 0 2.4vh;font-size:clamp(20px,2.4vw,40px);font-weight:700;color:#FFD48A}
+.board h2 .en{color:#8B99B1;font-weight:500}
+.nums{display:flex;flex-wrap:wrap;gap:1.6vw;align-content:flex-start;overflow:hidden;padding:1vh}
+.n{font-size:clamp(46px,7vw,120px);font-weight:800;line-height:1;padding:1.6vh 2vw;border-radius:2vh;background:#22304B;color:#EEF2F8;font-variant-numeric:tabular-nums}
+.n.hot{background:#F5A524;color:#2E1F00;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.none{color:#8B99B1;font-size:clamp(17px,1.9vw,30px);line-height:1.5}
+.fs{position:fixed;bottom:12px;inset-inline-start:12px;background:rgba(255,255,255,.08);border:0;color:#8B99B1;border-radius:10px;padding:7px 12px;font-size:13px}
+.fs:hover{color:#fff}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="module">
-import { db, esc, ms, dayKey, customerUrl, drawQR, requireStaff } from "./shared.js";
+import { db, esc, ms, dayKey, customerUrl, drawQR, requireStaff, showFatal } from "./shared.js";
 import { collection, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const root = document.getElementById("root");
-let V = null, venueId = null, tickets = [], unsub = null, today = dayKey(), linkedAt = 0, lastLinked = null, qrFor = null;
-const SHOW_NEW_FOR = 5 * 60 * 1000;   // a new order's QR stays up for 5 minutes
+let V = null, venueId = null, tickets = [], unsub = null, today = dayKey(), linkedAt = 0, lastLinked = null, qrFor = null, built = "";
+const SHOW_NEW_FOR = 5 * 60 * 1000;   // a new order's code stays up for 5 minutes
+window.addEventListener("error", e => showFatal(root, e.error || e.message));
+window.addEventListener("unhandledrejection", e => showFatal(root, e.reason));
 
 requireStaff(root, ({ venueId: id, venue }) => {
   venueId = id; V = venue;
-  onSnapshot(doc(db, "venues", venueId), s => { if (s.exists()){ V = s.data(); render(); } });
+  document.body.classList.add("screen-on");
+  document.documentElement.lang = "ar"; document.documentElement.dir = "rtl";
+  onSnapshot(doc(db, "venues", venueId), s => { if (s.exists()){ V = s.data(); built = ""; render(); } }, err => showFatal(root, err));
   listen();
+  render();
 });
+
 function listen(){
   if (unsub) unsub(); today = dayKey();
   unsub = onSnapshot(query(collection(db, "venues", venueId, "tickets"), where("day", "==", today)), snap => {
-    const prev = new Map(tickets.map(t => [t.id, t.status]));
+    const prev = new Map(tickets.map(x => [x.id, x.status]));
     tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    // the order on screen was just scanned: show a check mark for a moment
-    for (const t of tickets) if (prev.get(t.id) === "new" && t.status !== "new" && t.id === qrFor){ lastLinked = t; linkedAt = Date.now(); setTimeout(render, 2600); }
+    for (const x of tickets) if (x.id === qrFor && prev.get(x.id) === "new" && x.status !== "new"){ lastLinked = x; linkedAt = Date.now(); setTimeout(render, 2600); }
     render();
-  });
+  }, err => showFatal(root, err));
+}
+
+function leftCard(){
+  const now = Date.now();
+  if (lastLinked && now - linkedAt < 2500)
+    return { key: "ok-" + lastLinked.id, html: `<div class="card"><div class="tick">✓</div><div class="no num">${esc(lastLinked.no)}</div>
+      <div class="hint">اقعد وين ما بدك، جوالك رح يرن.<span class="en">Have a seat. Your phone will ring.</span></div></div>` };
+  const fresh = tickets.filter(x => x.status === "new" && now - (ms(x.createdAt) || now) < SHOW_NEW_FOR)
+    .sort((a,b) => (ms(b.createdAt)||now) - (ms(a.createdAt)||now))[0];
+  if (fresh)
+    return { key: "qr-" + fresh.id, id: fresh.id, html: `<div class="card"><div class="lab">رقم طلبك<span>Your order number</span></div>
+      <div class="no num">${esc(fresh.no)}</div><div class="qr" id="qr"></div>
+      <div class="hint">امسح الرمز بكاميرا جوالك ليرن عندما يجهز طلبك.<span class="en">Scan with your phone camera. It rings when your order is ready.</span></div></div>` };
+  return { key: "idle", html: `<div class="card idle"><div class="steps">
+      <div class="step"><b>1</b><span>اطلب وادفع عند الكاشير<span class="en">Order and pay at the till</span></span></div>
+      <div class="step"><b>2</b><span>امسح الرمز الذي يظهر هنا<span class="en">Scan the code that appears here</span></span></div>
+      <div class="step"><b>3</b><span>اقعد مرتاح، جوالك رح يرن<span class="en">Sit back. Your phone will ring</span></span></div>
+    </div></div>` };
 }
 
 function render(){
   if (!V) return;
   document.documentElement.style.setProperty("--brand", V.color || "#7A2E3A");
-  const now = Date.now();
-  const fresh = tickets.filter(t => t.status === "new" && now - (ms(t.createdAt) || now) < SHOW_NEW_FOR)
-    .sort((a,b) => (ms(b.createdAt)||now) - (ms(a.createdAt)||now))[0];
-  const ready = tickets.filter(t => t.status === "ready").sort((a,b) => (ms(a.readyAt)||0) - (ms(b.readyAt)||0));
-  let left;
-  if (lastLinked && now - linkedAt < 2500){
-    left = `<div class="left"><div class="vn">${esc(V.name)}</div><div class="no">${esc(lastLinked.no)}</div><div class="ok">✓ تم</div><div class="hint">اقعد وين ما بدك، جوالك رح يرن.</div></div>`;
-  } else if (fresh){
-    left = `<div class="left"><div class="vn">${esc(V.name)}</div><div class="lab">رقم طلبك</div><div class="no">${esc(fresh.no)}</div>
-      <div class="qr" id="qr" data-id="${fresh.id}"></div><div class="hint">امسح الرمز بكاميرا الجوال، ورح يرن جوالك لما يجهز طلبك.</div></div>`;
-  } else {
-    left = `<div class="left idle"><div class="vn">${esc(V.name)}</div><div class="big">اطلب، امسح الرمز، واقعد مرتاح</div><div class="hint">بعد ما تدفع، يظهر هون رمز لطلبك.</div></div>`;
-  }
-  const qrEl = document.getElementById("qr");
-  const sameQR = fresh && qrEl && qrEl.dataset.id === fresh.id && !(lastLinked && now - linkedAt < 2500);
-  if (!sameQR){
-    root.innerHTML = `<div class="screen">${left}<div class="right"><h2>جاهز للاستلام · ${esc(V.counter || "الكاونتر")}</h2><div class="nums" id="nums"></div></div></div>
-      <button class="fs" id="fs">ملء الشاشة</button>`;
+  const L = leftCard();
+  if (built !== L.key){
+    built = L.key;
+    root.innerHTML = `<div class="screen">
+      <header class="top"><div class="mark" style="background:${esc(V.color || "#7A2E3A")}">${esc(V.initial || (V.name||"").slice(0,1))}</div>
+        <h1>${esc(V.name)}</h1><div class="clock" id="clock"></div></header>
+      <div class="main">${L.html}
+        <section class="board"><h2>جاهز للاستلام · ${esc(V.counter || "الكاونتر")}<span class="en">Ready for pickup</span></h2><div class="nums" id="nums"></div></section>
+      </div></div>
+      <button class="fs" id="fs" type="button">ملء الشاشة · Full screen</button>`;
     const q = document.getElementById("qr");
-    if (q){ drawQR(q, customerUrl(venueId, fresh.id), 360); qrFor = fresh.id; } else qrFor = null;
+    if (q && L.id){ drawQR(q, customerUrl(venueId, L.id), 360); qrFor = L.id; } else if (!L.key.startsWith("ok-")) qrFor = null;
   }
+  const ready = tickets.filter(x => x.status === "ready").sort((a,b) => (ms(a.readyAt)||0) - (ms(b.readyAt)||0));
   document.getElementById("nums").innerHTML = ready.length
-    ? ready.map(t => `<span class="n ${t.seenAt ? "" : "hot"}">${esc(t.no)}</span>`).join("")
-    : `<span class="none">لا توجد طلبات جاهزة الآن</span>`;
+    ? ready.map(x => `<span class="n ${x.seenAt ? "" : "hot"}">${esc(x.no)}</span>`).join("")
+    : `<span class="none">لا توجد طلبات جاهزة الآن<span class="en">Nothing ready yet</span></span>`;
+  const c = document.getElementById("clock"); if (c){ const d = new Date(); c.textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0"); }
 }
 document.addEventListener("click", e => { if (e.target.id === "fs") document.documentElement.requestFullscreen?.().catch(()=>{}); });
-let wake = null; const keepAwake = async () => { try { wake = await navigator.wakeLock?.request("screen"); } catch(e){} };
+const keepAwake = async () => { try { await navigator.wakeLock?.request("screen"); } catch(e){} };
 keepAwake(); document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && keepAwake());
 setInterval(() => { if (!V) return; if (dayKey() !== today) listen(); else render(); }, 5000);
 </script>

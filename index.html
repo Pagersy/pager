@@ -7,53 +7,72 @@
 <title>طلبك</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;600;700&family=IBM+Plex+Mono:wght@600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&display=swap">
 <style>
-:root{--brand:#7A2E3A;--bg:#F6F5F2;--ink:#191B1F;--muted:#676B73;--line:#E2E1DC;--card:#fff;--signal:#F2A900;--bad:#B83434;
-  --f:"Readex Pro",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+/* Customer page. The order number lives on a tear-off ticket: the one bold element.
+   Brand colour comes from the shop; amber is the "ready" signal. */
+:root{--brand:#7A2E3A;--paper:#F2F4F7;--card:#FFFFFF;--ink:#142033;--muted:#5B6678;--line:#DAE0E8;
+  --amber:#F5A524;--amber-ink:#2E1F00;--good:#1F8A4C;--good-soft:#E1F3E8;--warn-soft:#FFF4DE;--warn-ink:#6B4500;
+  --f:"Alexandria","Segoe UI",Tahoma,system-ui,sans-serif}
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.55;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
 button{font:inherit;cursor:pointer}
-.app{min-height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
-.head{background:var(--brand);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 18px 16px;display:flex;align-items:center;gap:12px}
-.logo{width:42px;height:42px;border-radius:50%;background:#fff;color:var(--brand);display:grid;place-items:center;font-weight:700;font-size:19px;flex:none}
-.vn{font-weight:600;font-size:17px;line-height:1.25}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 55%,transparent);outline-offset:2px}
+.app{min-height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative}
+.app::before{content:"";position:absolute;inset:0 0 auto;height:230px;background:var(--brand);border-radius:0 0 36px 36px;z-index:-1}
+.head{color:#fff;padding:calc(18px + env(safe-area-inset-top)) 20px 8px;display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.95);color:var(--brand);display:grid;place-items:center;font-weight:800;font-size:20px;flex:none}
+.vn{font-weight:700;font-size:17px;line-height:1.25}
 .vs{font-size:13px;opacity:.85}
-.lang{margin-inline-start:auto;background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:99px;padding:5px 11px;font-size:13px}
-.body{flex:1;padding:20px 18px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
+.lang{margin-inline-start:auto;background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:99px;padding:6px 13px;font-size:13px}
+.body{flex:1;padding:12px 18px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
 .cap{text-align:center;color:var(--muted);font-size:14px}
-.num{font-family:var(--mono);font-weight:600;font-size:64px;line-height:1;text-align:center;letter-spacing:-.02em}
-.btn{border:0;border-radius:16px;padding:15px;font-weight:600;font-size:16px;background:var(--brand);color:#fff;width:100%}
-.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
-.btn:disabled{opacity:.5}
-.note{font-size:14px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
-.note.warn{border-color:#E8C77A;background:#FFF8E6;color:#5B4510}
-.note.ok{border-color:#B6DEC6;background:#EEF8F2;color:#1E6A42}
-.bar{height:6px;border-radius:9px;background:var(--line);overflow:hidden}
-.bar i{display:block;height:100%;background:var(--brand);width:30%;animation:prog 2.4s ease-in-out infinite alternate}
-@keyframes prog{to{width:75%}}
-.timer{text-align:center;font-size:15px;color:var(--muted)}
-.timer span{font-family:var(--mono)}
-.ready{flex:1;background:var(--brand);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;position:relative;overflow:hidden;min-height:100vh}
-.ready.flash::before{content:"";position:absolute;inset:0;background:var(--signal);animation:flash .8s steps(2,jump-none) infinite;opacity:0}
-@keyframes flash{50%{opacity:.85}}
+/* the ticket */
+.stub{background:var(--card);border-radius:24px;padding:22px 20px 20px;text-align:center;position:relative;box-shadow:0 1px 2px rgba(20,32,51,.06),0 16px 36px -18px rgba(20,32,51,.35);
+  -webkit-mask:radial-gradient(circle 13px at 0 72%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 13px at 100% 72%,#0000 98%,#000) right/51% 100% no-repeat;
+          mask:radial-gradient(circle 13px at 0 72%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 13px at 100% 72%,#0000 98%,#000) right/51% 100% no-repeat}
+.stub .cap{margin:0}
+.stub .num{font-size:84px;font-weight:800;line-height:1.05;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums;margin:4px 0 14px;overflow-wrap:anywhere}
+.stub .tear{border-top:2px dashed var(--line);margin:0 -4px;padding-top:14px;font-size:14px;color:var(--muted);display:flex;justify-content:center;align-items:center;gap:8px}
+.stub .tear b{color:var(--ink);font-weight:500}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--amber);display:inline-block;animation:breathe 1.6s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.35}}
+.num{font-weight:800;font-variant-numeric:tabular-nums}
+.btn{border:0;border-radius:16px;padding:16px;font-weight:700;font-size:16px;background:var(--brand);color:#fff;width:100%;display:block;text-align:center;text-decoration:none}
+.btn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line);font-weight:500}
+.btn:disabled{opacity:.55}
+.note{font-size:14px;color:var(--muted);background:var(--card);border-radius:14px;padding:12px 14px}
+.note.warn{background:var(--warn-soft);color:var(--warn-ink)}
+.note.ok{background:var(--good-soft);color:var(--good)}
+.timer{text-align:center;font-size:14px;color:var(--muted)}
+.timer span{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:500}
+.bar{height:6px;border-radius:9px;background:var(--line);overflow:hidden;margin:0 6px}
+.bar i{display:block;height:100%;background:var(--brand);width:30%;border-radius:9px;animation:prog 2.4s ease-in-out infinite alternate}
+@keyframes prog{to{width:78%}}
+/* ready: the whole screen becomes the pager */
+.ready{flex:1;background:var(--amber);color:var(--amber-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px 22px calc(28px + env(safe-area-inset-bottom));text-align:center;position:relative;overflow:hidden;min-height:100vh;min-height:100dvh}
+.ready.flash::before{content:"";position:absolute;inset:0;background:#fff;animation:flash 1s steps(2,jump-none) infinite;opacity:0}
+@keyframes flash{50%{opacity:.55}}
 .ready>*{position:relative}
-.ready h1{font-size:30px;margin:0}
-.ready .num{font-size:88px;background:rgba(255,255,255,.16);border-radius:24px;padding:12px 26px}
-.ready p{margin:0;font-size:16px}
-.ready .btn{background:#fff;color:var(--brand);max-width:360px}
-.stars{display:flex;justify-content:center;gap:8px;direction:ltr}
-.stars button{border:0;background:none;padding:2px;width:48px;height:48px}
+.ready.seen{background:var(--brand);color:#fff}
+.ready h1{font-size:30px;font-weight:800;margin:0;line-height:1.25}
+.ready .num{font-size:110px;line-height:1;background:rgba(255,255,255,.35);border-radius:28px;padding:14px 30px;min-width:60%}
+.ready.seen .num{background:rgba(255,255,255,.14)}
+.ready p{margin:0;font-size:17px;font-weight:500}
+.ready .btn{background:var(--amber-ink);color:#fff;max-width:360px;padding:18px}
+.stars{display:flex;justify-content:center;gap:6px;direction:ltr}
+.stars button{border:0;background:none;padding:2px;width:52px;height:52px}
 .stars svg{width:100%;height:100%}
-textarea{width:100%;font:inherit;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:84px;resize:vertical;background:#fff;color:var(--ink)}
-.gbtn{display:flex;gap:8px;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px;font-weight:600;color:var(--ink);text-decoration:none}
-.gbtn i{font-style:normal;font-weight:700;color:#4285F4;font-size:18px}
+textarea{width:100%;font:inherit;border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-height:90px;resize:vertical;background:#fff;color:var(--ink);margin-top:6px}
+.gbtn{display:flex;gap:10px;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;border-radius:16px;padding:15px;font-weight:500;color:var(--ink);text-decoration:none}
+.gbtn i{font-style:normal;font-weight:800;color:#4285F4;font-size:19px}
 .center{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;text-align:center}
-.foot{text-align:center;color:var(--muted);font-size:12px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
-.spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:sp 1s linear infinite;margin:auto}
+.panel{background:var(--card);border-radius:24px;padding:24px 20px;display:flex;flex-direction:column;gap:14px;text-align:center}
+.panel h2{font-size:20px;margin:0}
+.foot{text-align:center;color:var(--muted);font-size:12px;padding:6px 0 calc(12px + env(safe-area-inset-bottom))}
+.spin{width:36px;height:36px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:sp 1s linear infinite;margin:auto}
 @keyframes sp{to{transform:rotate(1turn)}}
-:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){*,*::before{animation:none!important}}
 </style>
 </head>
@@ -75,7 +94,7 @@ const LINK_KEY = "pg-link:" + tId;
 const TX = {
   ar:{
     orderNo:"رقم طلبك",
-    turnOn:"فعّل التنبيه", turnOnHint:"اضغط «سماح» عندما يسألك الجوال عن الإشعارات، حتى يرن جوالك عندما يجهز طلبك.",
+    oneTap:"ضغطة واحدة، ويرن جوالك عندما يجهز طلبك", turnOn:"فعّل التنبيه", turnOnHint:"اضغط «سماح» عندما يسألك الجوال عن الإشعارات، حتى يرن جوالك عندما يجهز طلبك.",
     preparing:"قيد التحضير", waited:"انتظرت",
     pushOk:"✓ التنبيه شغّال. رح يرن جوالك ويهتز عندما يجهز طلبك، حتى لو قفلته.",
     pageWarn:"الإشعارات غير مفعّلة على هذا الجوال. أبقِ هذه الصفحة مفتوحة والشاشة شغالة حتى تسمع النداء.",
@@ -92,7 +111,7 @@ const TX = {
   },
   en:{
     orderNo:"Your order number",
-    turnOn:"Turn on alerts", turnOnHint:"Tap \"Allow\" when your phone asks about notifications, so it rings when your order is ready.",
+    oneTap:"One tap, and your phone rings when it's ready", turnOn:"Turn on alerts", turnOnHint:"Tap \"Allow\" when your phone asks about notifications, so it rings when your order is ready.",
     preparing:"Being prepared", waited:"Waited",
     pushOk:"✓ Alerts are on. Your phone will ring and vibrate when your order is ready, even if you lock it.",
     pageWarn:"Notifications are off on this phone. Keep this page open and the screen on to hear the call.",
@@ -184,8 +203,9 @@ function render(){
 
   if (st === "new"){
     $app.innerHTML = head(t("orderNo") + " " + tk.no) + `<div class="body">
-      <div class="cap">${t("orderNo")}</div><div class="num">${esc(tk.no)}</div>
-      <div class="center" style="flex:0;gap:10px;margin-top:10px">
+      <div class="stub"><div class="cap">${t("orderNo")}</div><div class="num">${esc(tk.no)}</div>
+        <div class="tear">${t("oneTap")}</div></div>
+      <div class="center" style="flex:0;gap:10px;margin-top:6px">
         <button class="btn" data-act="link" ${busy?"disabled":""}>🔔 ${t("turnOn")}</button>
         <div class="cap">${t("turnOnHint")}</div></div></div>${foot()}`;
     return;
@@ -200,9 +220,8 @@ function render(){
       + (("Notification" in window) && Notification.permission === "denied" ? `<div class="cap">${t("deniedHint")}</div>` : "")
       + `<button class="btn alt" data-act="retry">🔔 ${t("retry")}</button>`;
     $app.innerHTML = head(t("orderNo") + " " + tk.no) + `<div class="body">
-      <div class="cap">${t("orderNo")}</div><div class="num">${esc(tk.no)}</div>
-      <div class="bar"><i></i></div><div class="cap" style="color:var(--ink);font-weight:600">${t("preparing")}</div>
-      <div class="timer">${t("waited")} <span data-since="${since}">0:00</span></div>
+      <div class="stub"><div class="cap">${t("orderNo")}</div><div class="num">${esc(tk.no)}</div>
+        <div class="tear"><span class="dot"></span><b>${t("preparing")}</b> · ${t("waited")} <span class="timer"><span data-since="${since}">0:00</span></span></div></div>
       ${chNote}<div class="note">${t("walk")}</div></div>${foot()}`;
     return;
   }
@@ -210,7 +229,7 @@ function render(){
   if (st === "ready"){
     const seen = !!tk.seenAt || acked;
     const needTap = !seen && (!actx || actx.state !== "running");
-    $app.innerHTML = `<div class="ready ${seen ? "" : "flash"}">
+    $app.innerHTML = `<div class="ready ${seen ? "seen" : "flash"}">
       <h1>${seen ? t("headTo", {c: esc(counter())}) : t("ready")}</h1>
       <div class="num">${esc(tk.no)}</div>
       <p>${seen ? t("showStaff") : t("headTo", {c: esc(counter())})}</p>
@@ -224,15 +243,15 @@ function render(){
     const r = tk.rating || rated;
     let inner = "";
     if (!r){
-      inner = `<div class="center"><b style="font-size:20px">${t("rateT")}</b>
-        <div class="stars">${[1,2,3,4,5].map(i => `<button data-act="rate" data-v="${i}" aria-label="${i}"><svg viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z" fill="#D9D7D0"/></svg></button>`).join("")}</div></div>`;
+      inner = `<div class="center"><div class="panel"><h2>${t("rateT")}</h2>
+        <div class="stars">${[1,2,3,4,5].map(i => `<button data-act="rate" data-v="${i}" aria-label="${i}"><svg viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z" fill="#D9D7D0"/></svg></button>`).join("")}</div></div></div>`;
     } else {
       const low = r <= 3;
-      inner = `<div class="stars" aria-label="${r}/5">${[1,2,3,4,5].map(i => `<svg viewBox="0 0 24 24" width="34" height="34"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z" fill="${i<=r?"#F2A900":"#D9D7D0"}"/></svg>`).join("")}</div>
+      inner = `<div class="panel"><div class="stars" aria-label="${r}/5">${[1,2,3,4,5].map(i => `<svg viewBox="0 0 24 24" width="34" height="34"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z" fill="${i<=r?"#F2A900":"#D9D7D0"}"/></svg>`).join("")}</div>
         <div class="cap">${t("rated")}</div>
         ${low ? (fbSent || tk.feedback ? `<div class="note ok">${t("fbSent")}</div>` :
           `<div><b style="font-size:14px">${t("fbT")}</b><textarea id="fb" maxlength="500">${esc(fb)}</textarea></div><button class="btn" data-act="fb">${t("send")}</button>`) : ""}
-        ${venue.reviewUrl ? `<a class="gbtn" href="${esc(venue.reviewUrl)}" target="_blank" rel="noopener"><i>G</i>${t("google")}</a>` : ""}`;
+        ${venue.reviewUrl ? `<a class="gbtn" href="${esc(venue.reviewUrl)}" target="_blank" rel="noopener"><i>G</i>${t("google")}</a>` : ""}</div>`;
     }
     $app.innerHTML = head(t("thanks")) + `<div class="body">${inner}</div>${foot()}`;
     return;

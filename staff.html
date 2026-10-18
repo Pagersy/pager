@@ -3,106 +3,156 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#13213A">
-<title>شاشة الموظف</title>
+<meta name="theme-color" content="#EEF1F5">
+<title>Staff · طاقم العمل</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="ui.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-:root{--bg:#ECEFF3;--card:#fff;--soft:#F5F7FA;--ink:#13213A;--muted:#5A6577;--line:#D6DCE4;--accent:#0B6E66;--accent-soft:#DCEFEC;
-  --signal:#F2A900;--signal-soft:#FFF1CC;--good:#1E7F55;--good-soft:#DDF2E7;--bad:#B83434;--bad-soft:#F8E0E0;
-  --f:"Readex Pro",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);font-size:15px;line-height:1.5}
-button,input,select{font:inherit;color:inherit}
-button{cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 14px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.signal{background:var(--signal);border-color:var(--signal);color:#1D1600;font-weight:600}
-.btn.sm{padding:7px 11px;font-size:14px;border-radius:9px}
-.btn.big{padding:16px 22px;font-size:18px;font-weight:600;border-radius:12px}
-.btn.ghost{background:transparent}
-.btn:disabled{opacity:.5;cursor:default}
-/* login */
-.login{min-height:100%;display:grid;place-items:center;padding:20px}
-.login .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;width:min(380px,100%);display:flex;flex-direction:column;gap:8px}
-.login h1{font-size:20px;margin:0 0 8px}
-.login input{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--soft)}
-.login label{font-size:13px;color:var(--muted);margin-top:4px}
-.login .btn{margin-top:10px}
-.err{color:var(--bad);font-size:14px;margin:0;min-height:1em}
-/* layout */
-.wrap{max-width:1280px;margin:0 auto;padding:12px max(14px,env(safe-area-inset-right)) 40px max(14px,env(safe-area-inset-left))}
-.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding-top:env(safe-area-inset-top)}
-.top h1{font-size:19px;margin:0;display:flex;align-items:center;gap:8px}
-.net{width:10px;height:10px;border-radius:50%;background:var(--good);display:inline-block}
-.net.off{background:var(--bad)}
-.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
-.seg button{border:0;background:transparent;padding:7px 12px;border-radius:7px;font-size:14px;color:var(--muted);font-weight:500}
+.wrap{max-width:1320px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right)) 48px max(16px,env(safe-area-inset-left))}
+/* top bar */
+.bar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding-top:env(safe-area-inset-top)}
+.shop{display:flex;align-items:center;gap:12px;margin-inline-end:auto;min-width:0}
+.mark{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;flex:none}
+.shop h1{font-size:18px;font-weight:700;margin:0;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.status{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--good);display:inline-block}
+.status.off i{background:var(--bad)}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:9px;font-size:14px;color:var(--muted);font-weight:500}
 .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
-.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:13px;color:var(--muted)}
-.stat b{font-family:var(--mono);color:var(--ink);font-size:16px;margin-inline-start:4px}
-.neworder{margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.neworder input{flex:1 1 180px;min-width:0;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--soft);font-size:16px}
-.neworder input.num::placeholder{font-family:var(--f);font-size:15px}
-.neworder input.num{flex:0 1 150px;font-family:var(--mono);font-size:20px;text-align:center}
-.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px;align-items:start}
-@media (max-width:800px){.cols{grid-template-columns:1fr}}
-.col{background:var(--card);border:1px solid var(--line);border-radius:14px;min-width:0}
-.col h2{font-size:16px;margin:0;padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
-.col h2 span{font-family:var(--mono);color:var(--muted)}
-.row{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;border-top:1px solid var(--line)}
-.row:first-of-type{border-top:0}
-.no{font-family:var(--mono);font-weight:600;font-size:28px;text-align:center;background:var(--soft);border-radius:10px;padding:4px 0;overflow-wrap:anywhere}
-.ready .no{background:var(--signal-soft)}
-.meta{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:13px;color:var(--muted)}
-.notefld{font-weight:500;color:var(--ink);font-size:14px;overflow-wrap:anywhere}
-.pill{font-size:12px;padding:2px 8px;border-radius:99px;font-weight:600;white-space:nowrap}
-.p-new{background:var(--soft);color:var(--muted);border:1px solid var(--line)}
-.p-tg{background:#E1F3FC;color:#0F6E9E}
-.p-pg{background:var(--accent-soft);color:var(--accent)}
-.p-seen{background:var(--good-soft);color:var(--good)}
-.p-miss{background:var(--bad-soft);color:var(--bad)}
-.p-wait{background:var(--signal-soft);color:#8A5A00}
-.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.empty{padding:22px 14px;text-align:center;color:var(--muted)}
-.done .row{opacity:.7}
-@media (max-width:520px){.row{grid-template-columns:62px minmax(0,1fr)}.row .acts{grid-column:1/-1;justify-content:flex-start}}
-.fb{margin-top:14px}
-.fb .item{padding:10px 14px;border-top:1px solid var(--line);font-size:14px}
-.fb .item:first-of-type{border-top:0}
-/* overlay */
-.ov{position:fixed;inset:0;background:rgba(10,16,28,.6);display:grid;place-items:center;padding:16px;z-index:20}
-.sheet{background:var(--card);border-radius:20px;padding:22px;width:min(440px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
-.sheet .bigno{font-family:var(--mono);font-weight:600;font-size:64px;line-height:1}
-.qr{background:#fff;padding:12px;border-radius:12px;border:1px solid var(--line)}
-.qr img,.qr canvas{display:block}
-.linked{color:var(--good);font-weight:600;font-size:18px}
-.form{align-items:stretch;text-align:start}
-.form label{font-size:13px;font-weight:600}
-.form input,.form select{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--soft);width:100%}
-.form .hint{font-size:12.5px;color:var(--muted)}
-.form .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.form .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tools .btn{padding:8px 12px;font-size:14px}
+
+/* new order */
+.compose{margin-top:16px;background:var(--card);border-radius:var(--r-lg);padding:16px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;box-shadow:0 1px 2px rgba(20,32,51,.05)}
+.next{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:96px;padding:6px 14px;border-inline-end:1px solid var(--line)}
+.next small{font-size:12.5px;color:var(--muted)}
+.next b{font-size:40px;font-weight:800;line-height:1.05}
+.next input{width:120px;border:2px solid var(--line);border-radius:var(--r-sm);padding:8px;font-size:28px;font-weight:700;text-align:center;background:var(--sunk)}
+.next input::placeholder{font-size:14px;font-weight:400}
+.compose .note{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;background:var(--sunk);font-size:16px;min-width:0;width:100%}
+.compose .go{padding:16px 26px;font-size:17px;font-weight:700;border-radius:var(--r)}
+@media (max-width:640px){.compose{grid-template-columns:1fr}.next{border:0;flex-direction:row;gap:10px}.compose .go{width:100%}}
+
+.stats{display:flex;flex-wrap:wrap;gap:6px 22px;margin:14px 4px 0;color:var(--muted);font-size:13.5px}
+.stats b{color:var(--ink);font-weight:700;font-size:16px;margin-inline-start:6px}
+
+/* lanes */
+.lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px;align-items:start}
+@media (max-width:860px){.lanes{grid-template-columns:1fr}}
+.lane{min-width:0}
+.lane h2{font-size:15px;font-weight:700;margin:0 4px 10px;display:flex;align-items:center;gap:8px}
+.lane h2 .count{min-width:26px;height:26px;padding:0 8px;border-radius:99px;background:var(--card);display:inline-grid;place-items:center;font-size:13px}
+.lane.ready h2 .count{background:var(--amber);color:var(--amber-ink)}
+.stack{display:flex;flex-direction:column;gap:8px}
+.empty{border:2px dashed var(--line);border-radius:var(--r);padding:22px 16px;text-align:center;color:var(--muted);font-size:14px}
+
+/* ticket stub: the number sits in a tear-off block */
+.tk{display:grid;grid-template-columns:92px minmax(0,1fr) auto;align-items:center;background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 2px rgba(20,32,51,.05)}
+.tk .no{align-self:stretch;display:grid;place-items:center;font-size:30px;font-weight:800;background:var(--sunk);position:relative;padding:10px 4px;overflow-wrap:anywhere;text-align:center;line-height:1.1}
+.tk .no::after{content:"";position:absolute;inset-block:8px;inset-inline-end:-1px;border-inline-end:2px dashed var(--paper)}
+.tk .no.long{font-size:22px}
+.tk.ready .no{background:var(--amber);color:var(--amber-ink)}
+.tk.ready.missed .no{background:var(--bad);color:#fff}
+.tk .info{padding:10px 14px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.tk .note{font-weight:500;overflow-wrap:anywhere}
+.tk .meta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:13px;color:var(--muted)}
+.tk .acts{display:flex;gap:6px;padding:10px;flex-wrap:wrap;justify-content:flex-end}
+.tk .acts .btn{padding:10px 14px}
+.tk .acts .big{padding:12px 20px;font-size:15px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;padding:2px 9px;border-radius:99px;background:var(--sunk);color:var(--muted)}
+.chip.push{background:var(--teal-soft);color:var(--teal)}
+.chip.page{background:var(--amber-soft);color:#8A5A00}
+.chip.seen{background:var(--good-soft);color:var(--good)}
+.chip.missed{background:var(--bad-soft);color:var(--bad)}
+.timer{font-variant-numeric:tabular-nums}
+@media (max-width:540px){.tk{grid-template-columns:74px minmax(0,1fr)}.tk .acts{grid-column:1/-1;border-top:1px solid var(--line);justify-content:stretch}.tk .acts .btn{flex:1}}
+
+.below{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:22px;align-items:start}
+@media (max-width:860px){.below{grid-template-columns:1fr}}
+.panel{background:var(--card);border-radius:var(--r);padding:6px 0}
+.panel h3{font-size:14px;font-weight:700;margin:0;padding:10px 16px;color:var(--muted)}
+.row{display:flex;gap:12px;align-items:baseline;padding:9px 16px;border-top:1px solid var(--line);font-size:14px}
+.row b{font-weight:700;min-width:48px}
+.row .stars{color:var(--amber);letter-spacing:1px}
+.row.fb{flex-direction:column;gap:2px}
+.panel .none{padding:10px 16px 14px;color:var(--muted);font-size:14px}
+
+/* sheets */
+.ov{position:fixed;inset:0;background:rgba(14,22,36,.55);display:grid;place-items:center;padding:16px;z-index:20}
+.sheet{background:var(--card);border-radius:24px;padding:26px;width:min(440px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.qr-sheet{align-items:center;text-align:center}
+.qr-sheet small{color:var(--muted)}
+.qr-sheet .bigno{font-size:72px;font-weight:800;line-height:1}
+.qrbox{background:#fff;padding:14px;border-radius:16px;border:1px solid var(--line)}
+.qrbox img,.qrbox canvas{display:block}
+.linked{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--good);font-weight:700;font-size:18px;padding:20px 0}
+.linked span{width:64px;height:64px;border-radius:50%;background:var(--good-soft);display:grid;place-items:center;font-size:32px}
+.sheet .wide{width:100%;padding:14px}
+.form h2{font-size:20px;margin:0}
+.form label{font-size:13px;font-weight:500;display:block;margin-bottom:5px}
+.form input,.form select{border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 13px;background:var(--sunk);width:100%}
+.form .hint{font-size:12.5px;color:var(--muted);margin-top:4px}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form .end{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
 </style>
 </head>
 <body>
 <div id="root"></div>
 
 <script type="module">
-import { db, esc, ms, mmss, dayKey, customerUrl, drawQR, requireStaff, logout } from "./shared.js";
+import { db, esc, ms, mmss, dayKey, customerUrl, drawQR, requireStaff, logout, getLang, setLang, makeT, showFatal } from "./shared.js";
 import { collection, doc, query, where, onSnapshot, addDoc, updateDoc, runTransaction, serverTimestamp, increment }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+const TX = {
+  ar: {
+    online:"متصل", offline:"غير متصل · سيُحفظ عند عودة الاتصال", cashier:"كاشير", bar:"بار", both:"الكل",
+    display:"شاشة الزبائن", settings:"الإعدادات", out:"خروج", lang:"English",
+    next:"الرقم التالي", receipt:"رقم الفاتورة", notePh:"ملاحظة اختيارية، مثل: ٢ لاتيه", newOrder:"طلب جديد",
+    sToday:"طلبات اليوم", sDone:"تم الاستلام", sPrep:"متوسط التحضير", sRating:"التقييم", sMissed:"نودي أكثر من مرة",
+    preparing:"قيد التحضير", readyLane:"بانتظار الاستلام",
+    emptyPrep:"لا توجد طلبات. اضغط «طلب جديد» عند كل طلب.", emptyReady:"عندما يجهز طلب، اضغط «جاهز» ليرن جوال الزبون.",
+    notScanned:"لم يمسح الرمز", push:"إشعار الجوال", page:"الصفحة مفتوحة فقط",
+    called:"تم النداء", seen:"شاف النداء", missed:"لم يرَ النداء", calls:"{n} نداءات",
+    ready:"جاهز", again:"نادِ مرة ثانية", collect:"تم الاستلام", showQR:"الرمز", cancel:"إلغاء",
+    recent:"آخر المستلَم", feedback:"ملاحظات خاصة من الزبائن", noRecent:"لا شيء بعد.", noFeedback:"لا توجد ملاحظات اليوم.", noRating:"بدون تقييم",
+    orderNo:"رقم الطلب", scanHint:"وجّه الشاشة للزبون ليمسح الرمز", linked:"تم ربط جوال الزبون", done:"تم", noPhone:"إغلاق · الزبون بدون جوال",
+    setT:"إعدادات المحل", sName:"اسم المحل", sInitial:"حرف الشعار", sColor:"لون المحل", sCounter:"مكان الاستلام", sCounterPh:"الكاونتر",
+    sNote:"سطر إضافي في شاشة النداء", sNotePh:"مثال: المناديل جنب الباب", sReview:"رابط تقييم Google",
+    sReviewHint:"من Google Business Profile ← «اطلب تقييمات». يظهر لكل الزبائن بعد الاستلام.",
+    sMode:"رقم الطلب", modeAuto:"تلقائي، يبدأ من 1 كل يوم", modeManual:"أكتب رقم الفاتورة من نظام الكاشير",
+    save:"حفظ", close:"إلغاء", errCreate:"تعذّر إنشاء الطلب. تأكد من الاتصال.", errSave:"تعذّر الحفظ.", errAct:"تعذّر تنفيذ العملية."
+  },
+  en: {
+    online:"Online", offline:"Offline · changes save when the connection is back", cashier:"Cashier", bar:"Bar", both:"Both",
+    display:"Customer screen", settings:"Settings", out:"Sign out", lang:"عربي",
+    next:"Next number", receipt:"Receipt no.", notePh:"Optional note, e.g. 2 lattes", newOrder:"New order",
+    sToday:"Orders today", sDone:"Picked up", sPrep:"Avg. prep time", sRating:"Rating", sMissed:"Called more than once",
+    preparing:"Preparing", readyLane:"Waiting for pickup",
+    emptyPrep:"No orders. Tap New order for each order.", emptyReady:"When an order is ready, tap Ready to ring the customer's phone.",
+    notScanned:"Not scanned", push:"Phone alerts", page:"Page open only",
+    called:"Called", seen:"Saw the call", missed:"Hasn't seen it", calls:"{n} calls",
+    ready:"Ready", again:"Call again", collect:"Picked up", showQR:"Code", cancel:"Cancel",
+    recent:"Recently picked up", feedback:"Private notes from customers", noRecent:"Nothing yet.", noFeedback:"No notes today.", noRating:"No rating",
+    orderNo:"Order number", scanHint:"Turn the screen to the customer to scan", linked:"Customer's phone linked", done:"Done", noPhone:"Close · customer has no phone",
+    setT:"Shop settings", sName:"Shop name", sInitial:"Logo letter", sColor:"Shop colour", sCounter:"Pickup point", sCounterPh:"Counter",
+    sNote:"Extra line on the call screen", sNotePh:"e.g. Napkins are by the door", sReview:"Google review link",
+    sReviewHint:"From Google Business Profile → \"Ask for reviews\". Shown to every customer after pickup.",
+    sMode:"Order number", modeAuto:"Automatic, starts at 1 each day", modeManual:"Type the receipt number from the till",
+    save:"Save", close:"Cancel", errCreate:"Couldn't create the order. Check the connection.", errSave:"Couldn't save.", errAct:"Couldn't do that. Try again."
+  }
+};
+const t = makeT(TX);
 const root = document.getElementById("root");
-let V = null, venueId = null, tickets = [], role = "both", showQR = null, settingsOpen = false, today = dayKey(), unsub = null, creating = false;
+let V = null, venueId = null, tickets = [], role = "both", showQR = null, settingsOpen = false, today = dayKey(), unsub = null, creating = false, online = true;
 try { role = localStorage.getItem("pg-role") || "both"; } catch(e){}
 const NOT_SEEN_MS = 60000;
+window.addEventListener("error", e => showFatal(root, e.error || e.message));
+window.addEventListener("unhandledrejection", e => showFatal(root, e.reason));
 
 requireStaff(root, ({ venueId: id, venue }) => {
   venueId = id; V = venue;
@@ -117,112 +167,115 @@ function listen(){
   unsub = onSnapshot(q, { includeMetadataChanges: true }, snap => {
     tickets = snap.docs.map(d => ({ id: d.id, ...d.data(), _pending: d.metadata.hasPendingWrites }));
     online = !snap.metadata.fromCache;
-    if (showQR){ const tk = tickets.find(x => x.id === showQR); if (tk && tk.status !== "new"){ linkedFlash(tk); } }
+    if (showQR){ const tk = tickets.find(x => x.id === showQR); if (tk && tk.status !== "new") linkedFlash(); }
     if (!settingsOpen) render();
-  });
+  }, err => showFatal(root, err));
 }
-let online = true;
 window.addEventListener("online", () => { online = true; render(); });
 window.addEventListener("offline", () => { online = false; render(); });
 
 const created = tk => ms(tk.createdAt) || Date.now();
 const byCreated = (a, b) => created(a) - created(b);
+const nextAuto = () => tickets.reduce((m, x) => Math.max(m, parseInt(x.no, 10) || 0), 0) + 1;
 
 function render(){
   if (!V) return;
-  // keep what the cashier is typing when live updates redraw the screen
   const keep = { nno: document.getElementById("nno")?.value, nnote: document.getElementById("nnote")?.value, focus: document.activeElement?.id };
-  const waiting = tickets.filter(t => t.status === "new" || t.status === "waiting").sort(byCreated);
-  const ready = tickets.filter(t => t.status === "ready").sort((a,b) => (ms(a.readyAt)||0) - (ms(b.readyAt)||0));
-  const done = tickets.filter(t => t.status === "collected").sort((a,b) => (ms(b.collectedAt)||0) - (ms(a.collectedAt)||0));
-  const showNew = role !== "bar", showLists = role !== "cashier";
-  const manual = V.numberMode === "manual";
-
-  const waits = done.map(t => (ms(t.readyAt)||0) - (ms(t.linkedAt) || created(t))).filter(x => x > 0);
-  const rated = done.filter(t => t.rating);
-  const fbs = tickets.filter(t => t.feedback).sort((a,b) => created(b) - created(a));
+  const waiting = tickets.filter(x => x.status === "new" || x.status === "waiting").sort(byCreated);
+  const ready = tickets.filter(x => x.status === "ready").sort((a,b) => (ms(a.readyAt)||0) - (ms(b.readyAt)||0));
+  const done = tickets.filter(x => x.status === "collected").sort((a,b) => (ms(b.collectedAt)||0) - (ms(a.collectedAt)||0));
+  const showNew = role !== "bar", showLanes = role !== "cashier", manual = V.numberMode === "manual";
+  const waits = done.map(x => (ms(x.readyAt)||0) - (ms(x.linkedAt) || created(x))).filter(x => x > 0);
+  const rated = done.filter(x => x.rating);
+  const fbs = tickets.filter(x => x.feedback).sort((a,b) => created(b) - created(a));
+  const color = V.color || "#7A2E3A";
 
   root.innerHTML = `<div class="wrap">
-    <header class="top">
-      <h1><span class="net ${online ? "" : "off"}" title="${online ? "متصل" : "غير متصل، سيتم الحفظ لاحقاً"}"></span>${esc(V.name)}</h1>
+    <header class="bar">
+      <div class="shop"><div class="mark" style="background:${esc(color)}">${esc(V.initial || (V.name||"").slice(0,1))}</div>
+        <div style="min-width:0"><h1>${esc(V.name)}</h1><div class="status ${online ? "" : "off"}"><i></i>${online ? t("online") : t("offline")}</div></div></div>
+      <div class="seg" role="group" aria-label="Device">
+        <button data-act="role" data-v="cashier" aria-pressed="${role==="cashier"}">${t("cashier")}</button>
+        <button data-act="role" data-v="bar" aria-pressed="${role==="bar"}">${t("bar")}</button>
+        <button data-act="role" data-v="both" aria-pressed="${role==="both"}">${t("both")}</button>
+      </div>
       <div class="tools">
-        <div class="seg" role="group" aria-label="دور الجهاز">
-          <button data-act="role" data-v="cashier" aria-pressed="${role==="cashier"}">كاشير</button>
-          <button data-act="role" data-v="bar" aria-pressed="${role==="bar"}">بار</button>
-          <button data-act="role" data-v="both" aria-pressed="${role==="both"}">الكل</button>
-        </div>
-        <a class="btn sm" href="display.html" target="_blank" rel="noopener">شاشة الزبائن</a>
-        <button class="btn sm" data-act="settings">الإعدادات</button>
-        <button class="btn sm ghost" data-act="logout">خروج</button>
+        <a class="btn" href="display.html" target="_blank" rel="noopener">${t("display")}</a>
+        <button class="btn" data-act="settings">${t("settings")}</button>
+        <button class="btn quiet" data-act="lang">${t("lang")}</button>
+        <button class="btn quiet" data-act="logout">${t("out")}</button>
       </div>
     </header>
-    <div class="stats">
-      <span class="stat">طلبات اليوم<b>${tickets.filter(t => t.status !== "cancelled").length}</b></span>
-      <span class="stat">تم الاستلام<b>${done.length}</b></span>
-      <span class="stat">متوسط التحضير<b>${waits.length ? mmss(waits.reduce((a,b)=>a+b,0)/waits.length) : "—"}</b></span>
-      <span class="stat">التقييم<b>${rated.length ? (rated.reduce((a,t)=>a+t.rating,0)/rated.length).toFixed(1) + " ★" : "—"}</b></span>
-      <span class="stat">نودي أكثر من مرة<b>${tickets.filter(t => (t.calls||0) > 1).length}</b></span>
-    </div>
-    ${showNew ? `<form class="neworder" id="nf" autocomplete="off">
-      ${manual ? `<input class="num" id="nno" inputmode="numeric" placeholder="رقم الفاتورة" required>` : ""}
-      <input id="nnote" placeholder="ملاحظة اختيارية (مثال: ٢ لاتيه)" maxlength="80">
-      <button class="btn primary big" type="submit" ${creating ? "disabled" : ""}>+ طلب جديد</button>
+
+    ${showNew ? `<form class="compose" id="nf" autocomplete="off">
+      <div class="next">${manual
+        ? `<label for="nno" style="font-size:12.5px;color:var(--muted)">${t("receipt")}</label><input id="nno" class="num" inputmode="numeric" placeholder="1083" required>`
+        : `<small>${t("next")}</small><b class="num">${nextAuto()}</b>`}</div>
+      <input id="nnote" class="note" placeholder="${t("notePh")}" maxlength="80">
+      <button class="btn primary go" type="submit" ${creating ? "disabled" : ""}>+ ${t("newOrder")}</button>
     </form>` : ""}
-    ${showLists ? `<div class="cols">
-      <section class="col"><h2>قيد التحضير <span>${waiting.length}</span></h2>
-        ${waiting.length ? waiting.map(rowHTML).join("") : `<div class="empty">لا توجد طلبات قيد التحضير.</div>`}</section>
-      <section class="col"><h2>تم النداء <span>${ready.length}</span></h2>
-        ${ready.length ? ready.map(rowHTML).join("") : `<div class="empty">لا يوجد أحد بانتظار الاستلام.</div>`}</section>
+
+    <div class="stats">
+      <span>${t("sToday")}<b class="num">${tickets.filter(x => x.status !== "cancelled").length}</b></span>
+      <span>${t("sDone")}<b class="num">${done.length}</b></span>
+      <span>${t("sPrep")}<b class="num">${waits.length ? mmss(waits.reduce((a,b)=>a+b,0)/waits.length) : "—"}</b></span>
+      <span>${t("sRating")}<b class="num">${rated.length ? (rated.reduce((a,x)=>a+x.rating,0)/rated.length).toFixed(1) + " ★" : "—"}</b></span>
+      <span>${t("sMissed")}<b class="num">${tickets.filter(x => (x.calls||0) > 1).length}</b></span>
     </div>
-    <div class="cols">
-      <section class="col done"><h2>آخر المستلَم <span>${done.length}</span></h2>
-        ${done.length ? done.slice(0, 8).map(rowHTML).join("") : `<div class="empty">لا شيء بعد.</div>`}</section>
-      <section class="col fb"><h2>ملاحظات الزبائن اليوم <span>${fbs.length}</span></h2>
-        ${fbs.length ? fbs.map(t => `<div class="item"><b>${esc(t.no)}</b> · ${"★".repeat(t.rating||0)}<br>${esc(t.feedback)}</div>`).join("") : `<div class="empty">لا توجد ملاحظات خاصة.</div>`}</section>
+
+    ${showLanes ? `<div class="lanes">
+      <section class="lane"><h2>${t("preparing")} <span class="count num">${waiting.length}</span></h2>
+        <div class="stack">${waiting.length ? waiting.map(stub).join("") : `<div class="empty">${t("emptyPrep")}</div>`}</div></section>
+      <section class="lane ready"><h2>${t("readyLane")} <span class="count num">${ready.length}</span></h2>
+        <div class="stack">${ready.length ? ready.map(stub).join("") : `<div class="empty">${t("emptyReady")}</div>`}</div></section>
+    </div>
+    <div class="below">
+      <section class="panel"><h3>${t("recent")}</h3>
+        ${done.length ? done.slice(0, 8).map(x => `<div class="row"><b class="num">${esc(x.no)}</b><span class="stars">${x.rating ? "★".repeat(x.rating) : `<span style="color:var(--muted)">${t("noRating")}</span>`}</span>${x.note ? `<span style="color:var(--muted)">${esc(x.note)}</span>` : ""}</div>`).join("") : `<div class="none">${t("noRecent")}</div>`}</section>
+      <section class="panel"><h3>${t("feedback")}</h3>
+        ${fbs.length ? fbs.map(x => `<div class="row fb"><span><b class="num">${esc(x.no)}</b> <span class="stars">${"★".repeat(x.rating||0)}</span></span><span>${esc(x.feedback)}</span></div>`).join("") : `<div class="none">${t("noFeedback")}</div>`}</section>
     </div>` : ""}
   </div>
   ${showQR ? qrSheet() : ""}${settingsOpen ? settingsSheet() : ""}`;
 
   for (const k of ["nno","nnote"]){ const el = document.getElementById(k); if (el && keep[k] != null) el.value = keep[k]; }
   if (keep.focus && !showQR && !settingsOpen){ const f = document.getElementById(keep.focus); if (f && f.matches("input")) f.focus(); }
-  if (showQR){ const el = document.getElementById("qrbox"); if (el && !el.dataset.done){ drawQR(el, customerUrl(venueId, showQR), 220); el.dataset.done = "1"; } }
-  const nn = document.getElementById(manual ? "nno" : "nnote"); if (nn && showNew && !showQR && !settingsOpen && document.activeElement === document.body) nn.focus();
+  if (showQR){ const el = document.getElementById("qrbox"); if (el && !el.dataset.done){ drawQR(el, customerUrl(venueId, showQR), 240); el.dataset.done = "1"; } }
   tickTimers();
 }
 
-function rowHTML(t){
-  let pills = "", acts = "", since = null;
-  const ch = t.status === "new" ? `<span class="pill p-new">لم يمسح الرمز</span>`
-    : t.channel === "push" ? `<span class="pill p-tg">إشعار الجوال ✓</span>`
-    : `<span class="pill p-pg">الصفحة مفتوحة فقط</span>`;
-  if (t.status === "new" || t.status === "waiting"){
-    since = ms(t.linkedAt) || created(t);
-    pills = ch;
-    acts = `${t.status === "new" ? `<button class="btn sm" data-act="qr" data-id="${t.id}">الرمز</button><button class="btn sm ghost" data-act="cancel" data-id="${t.id}">إلغاء</button>` : ""}
-      <button class="btn signal" data-act="ready" data-id="${t.id}">جاهز</button>`;
-  } else if (t.status === "ready"){
-    since = ms(t.readyAt) || Date.now();
-    const late = !t.seenAt && Date.now() - since > NOT_SEEN_MS;
-    pills = (t.seenAt ? `<span class="pill p-seen">✓ شاف النداء</span>` : late ? `<span class="pill p-miss">لم يرَ النداء</span>` : `<span class="pill p-wait">تم النداء</span>`) + ch
-      + ((t.calls||0) > 1 ? `<span>${t.calls} نداءات</span>` : "");
-    acts = `${!t.seenAt ? `<button class="btn sm" data-act="again" data-id="${t.id}">نادِ مرة ثانية</button>` : ""}<button class="btn primary" data-act="collect" data-id="${t.id}">تم الاستلام</button>`;
-  } else if (t.status === "collected"){
-    pills = t.rating ? `<span>${"★".repeat(t.rating)}</span>` : `<span>بدون تقييم</span>`;
+function stub(x){
+  let chips = "", acts = "", since = null, cls = x.status;
+  const ch = x.status === "new" ? `<span class="chip">${t("notScanned")}</span>`
+    : x.channel === "push" ? `<span class="chip push">${t("push")}</span>`
+    : `<span class="chip page">${t("page")}</span>`;
+  if (x.status === "new" || x.status === "waiting"){
+    since = ms(x.linkedAt) || created(x);
+    chips = ch;
+    acts = `${x.status === "new" ? `<button class="btn quiet" data-act="cancel" data-id="${x.id}">${t("cancel")}</button><button class="btn" data-act="qr" data-id="${x.id}">${t("showQR")}</button>` : ""}
+      <button class="btn call big" data-act="ready" data-id="${x.id}">${t("ready")}</button>`;
+  } else if (x.status === "ready"){
+    since = ms(x.readyAt) || Date.now();
+    const late = !x.seenAt && Date.now() - since > NOT_SEEN_MS;
+    if (late) cls += " missed";
+    chips = (x.seenAt ? `<span class="chip seen">✓ ${t("seen")}</span>` : late ? `<span class="chip missed">${t("missed")}</span>` : `<span class="chip">${t("called")}</span>`)
+      + ch + ((x.calls||0) > 1 ? `<span>${t("calls", { n: x.calls })}</span>` : "");
+    acts = `${!x.seenAt ? `<button class="btn" data-act="again" data-id="${x.id}">${t("again")}</button>` : ""}<button class="btn primary big" data-act="collect" data-id="${x.id}">${t("collect")}</button>`;
   }
-  return `<div class="row ${t.status}"><div class="no">${esc(t.no)}</div>
-    <div style="min-width:0">${t.note ? `<div class="notefld">${esc(t.note)}</div>` : ""}
-      <div class="meta">${pills}${since ? `<span style="font-family:var(--mono)" data-since="${since}"></span>` : ""}${t._pending ? `<span title="بانتظار الاتصال">⏳</span>` : ""}</div></div>
-    <div class="acts">${acts}</div></div>`;
+  return `<article class="tk ${cls}"><div class="no num ${String(x.no).length > 3 ? "long" : ""}">${esc(x.no)}</div>
+    <div class="info">${x.note ? `<div class="note">${esc(x.note)}</div>` : ""}
+      <div class="meta">${chips}${since ? `<span class="timer" data-since="${since}"></span>` : ""}${x._pending ? `<span title="${t("offline")}">⏳</span>` : ""}</div></div>
+    <div class="acts">${acts}</div></article>`;
 }
 
 function qrSheet(){
-  const t = tickets.find(x => x.id === showQR);
-  if (!t) return "";
-  const linked = t.status !== "new";
-  return `<div class="ov" data-act="closeqr-bg"><div class="sheet" role="dialog" aria-label="رمز الطلب">
-    <div style="color:var(--muted)">رقم الطلب</div><div class="bigno">${esc(t.no)}</div>
-    ${linked ? `<div class="linked">✓ تم ربط جوال الزبون</div>` : `<div class="qr" id="qrbox"></div><div style="color:var(--muted)">وجّه الشاشة للزبون ليمسح الرمز</div>`}
-    <button class="btn big" data-act="closeqr" style="width:100%">${linked ? "تم" : "إغلاق (الزبون بدون جوال)"}</button></div></div>`;
+  const x = tickets.find(y => y.id === showQR);
+  if (!x) return "";
+  const linked = x.status !== "new";
+  return `<div class="ov" data-act="closeqr-bg"><div class="sheet qr-sheet" role="dialog" aria-label="${t("orderNo")}">
+    <small>${t("orderNo")}</small><div class="bigno num">${esc(x.no)}</div>
+    ${linked ? `<div class="linked"><span>✓</span>${t("linked")}</div>` : `<div class="qrbox" id="qrbox"></div><small>${t("scanHint")}</small>`}
+    <button class="btn ${linked ? "primary" : ""} wide" data-act="closeqr">${linked ? t("done") : t("noPhone")}</button></div></div>`;
 }
 let flashTimer = null;
 function linkedFlash(){ clearTimeout(flashTimer); flashTimer = setTimeout(() => { showQR = null; render(); }, 1400); }
@@ -230,18 +283,18 @@ function linkedFlash(){ clearTimeout(flashTimer); flashTimer = setTimeout(() => 
 function settingsSheet(){
   const v = V;
   return `<div class="ov"><form class="sheet form" id="sf" autocomplete="off">
-    <h2 style="margin:0;font-size:18px">إعدادات المحل</h2>
-    <div class="two"><div><label for="s-name">اسم المحل</label><input id="s-name" value="${esc(v.name)}" required maxlength="60"></div>
-      <div><label for="s-initial">حرف الشعار</label><input id="s-initial" value="${esc(v.initial || "")}" maxlength="2"></div></div>
-    <div class="two"><div><label for="s-color">لون العلامة</label><input id="s-color" type="color" value="${esc(v.color || "#7A2E3A")}" style="height:44px;padding:4px"></div>
-      <div><label for="s-counter">مكان الاستلام</label><input id="s-counter" value="${esc(v.counter || "")}" placeholder="الكاونتر" maxlength="40"></div></div>
-    <div><label for="s-note">سطر إضافي في شاشة النداء</label><input id="s-note" value="${esc(v.note || "")}" placeholder="مثال: المناديل جنب الباب" maxlength="80"></div>
-    <div><label for="s-review">رابط تقييم Google</label><input id="s-review" type="url" dir="ltr" value="${esc(v.reviewUrl || "")}" placeholder="https://g.page/r/.../review">
-      <div class="hint">من Google Business Profile ← «اطلب تقييمات». يظهر لكل الزبائن بعد الاستلام.</div></div>
-    <div><label for="s-mode">رقم الطلب</label><select id="s-mode">
-      <option value="auto" ${v.numberMode !== "manual" ? "selected" : ""}>تلقائي (يبدأ من 1 كل يوم)</option>
-      <option value="manual" ${v.numberMode === "manual" ? "selected" : ""}>أكتب رقم الفاتورة من نظام الكاشير</option></select></div>
-    <div class="actions"><button class="btn" type="button" data-act="closeset">إلغاء</button><button class="btn primary" type="submit">حفظ</button></div>
+    <h2>${t("setT")}</h2>
+    <div class="two"><div><label for="s-name">${t("sName")}</label><input id="s-name" value="${esc(v.name)}" required maxlength="60"></div>
+      <div><label for="s-initial">${t("sInitial")}</label><input id="s-initial" value="${esc(v.initial || "")}" maxlength="2"></div></div>
+    <div class="two"><div><label for="s-color">${t("sColor")}</label><input id="s-color" type="color" value="${esc(v.color || "#7A2E3A")}" style="height:46px;padding:4px"></div>
+      <div><label for="s-counter">${t("sCounter")}</label><input id="s-counter" value="${esc(v.counter || "")}" placeholder="${t("sCounterPh")}" maxlength="40"></div></div>
+    <div><label for="s-note">${t("sNote")}</label><input id="s-note" value="${esc(v.note || "")}" placeholder="${t("sNotePh")}" maxlength="80"></div>
+    <div><label for="s-review">${t("sReview")}</label><input id="s-review" type="url" dir="ltr" value="${esc(v.reviewUrl || "")}" placeholder="https://g.page/r/.../review">
+      <div class="hint">${t("sReviewHint")}</div></div>
+    <div><label for="s-mode">${t("sMode")}</label><select id="s-mode">
+      <option value="auto" ${v.numberMode !== "manual" ? "selected" : ""}>${t("modeAuto")}</option>
+      <option value="manual" ${v.numberMode === "manual" ? "selected" : ""}>${t("modeManual")}</option></select></div>
+    <div class="end"><button class="btn" type="button" data-act="closeset">${t("close")}</button><button class="btn primary" type="submit">${t("save")}</button></div>
   </form></div>`;
 }
 
@@ -253,31 +306,28 @@ async function nextNumber(){
       const n = d.day === today ? (d.n || 0) + 1 : 1;
       tx.set(cRef, { day: today, n }); return n;
     });
-  } catch(e){
-    // Offline: continue from the highest number on this screen
-    return tickets.reduce((m, t) => Math.max(m, parseInt(t.no, 10) || 0), 0) + 1;
-  }
+  } catch(e){ return nextAuto(); } // offline: continue from the highest number on this screen
 }
+
+function toast(msg){ const n = document.createElement("div"); n.className = "fatal"; n.textContent = msg; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
 
 document.addEventListener("submit", async e => {
   if (e.target.id === "nf"){
     e.preventDefault(); if (creating) return;
     const manual = V.numberMode === "manual";
-    const noEl = document.getElementById("nno"), noteEl = document.getElementById("nnote");
-    const typed = manual ? noEl.value.trim() : "";
+    const typed = manual ? (document.getElementById("nno")?.value || "").trim() : "";
     if (manual && !typed) return;
+    const note = (document.getElementById("nnote")?.value || "").trim().slice(0, 80);
     if (dayKey() !== today) listen();
     creating = true;
     try {
       const no = manual ? typed : String(await nextNumber());
       const ref = await addDoc(collection(db, "venues", venueId, "tickets"), {
-        no, note: (noteEl?.value || "").trim().slice(0, 80), status: "new", day: today,
-        createdAt: serverTimestamp(), calls: 0, channel: null
+        no, note, status: "new", day: today, createdAt: serverTimestamp(), calls: 0, channel: null
       });
       showQR = ref.id;
-      // the form may have been redrawn by a live update while saving, so look the fields up again
       for (const k of ["nno","nnote"]){ const el = document.getElementById(k); if (el) el.value = ""; }
-    } catch(err){ console.error(err); alert("تعذّر إنشاء الطلب."); }
+    } catch(err){ console.error(err); toast(t("errCreate")); }
     creating = false; render();
   }
   if (e.target.id === "sf"){
@@ -286,7 +336,7 @@ document.addEventListener("submit", async e => {
     try {
       await updateDoc(doc(db, "venues", venueId), { name: g("s-name"), initial: g("s-initial"), color: g("s-color"), counter: g("s-counter"), note: g("s-note"), reviewUrl: g("s-review"), numberMode: g("s-mode") });
       settingsOpen = false; render();
-    } catch(err){ console.error(err); alert("تعذّر الحفظ."); }
+    } catch(err){ console.error(err); toast(t("errSave")); }
   }
 });
 
@@ -298,6 +348,7 @@ document.addEventListener("click", async e => {
   try {
     switch (a){
       case "role": role = b.dataset.v; try { localStorage.setItem("pg-role", role); } catch(_){} render(); break;
+      case "lang": setLang(getLang() === "ar" ? "en" : "ar"); render(); break;
       case "logout": logout(); break;
       case "settings": settingsOpen = true; render(); break;
       case "closeset": settingsOpen = false; render(); break;
@@ -308,7 +359,7 @@ document.addEventListener("click", async e => {
       case "collect": await updateDoc(ref, { status: "collected", collectedAt: serverTimestamp() }); break;
       case "cancel": await updateDoc(ref, { status: "cancelled" }); break;
     }
-  } catch(err){ console.error(err); alert("تعذّر تنفيذ العملية."); }
+  } catch(err){ console.error(err); toast(t("errAct")); }
 });
 
 function tickTimers(){ document.querySelectorAll("[data-since]").forEach(el => el.textContent = mmss(Date.now() - +el.dataset.since)); }
@@ -316,9 +367,8 @@ let lastLate = "";
 setInterval(() => {
   tickTimers();
   if (!V) return;
-  if (dayKey() !== today) { listen(); return; }
-  // re-draw when someone crosses the "not seen" line
-  const late = tickets.filter(t => t.status === "ready" && !t.seenAt && Date.now() - (ms(t.readyAt)||Date.now()) > NOT_SEEN_MS).map(t => t.id).join();
+  if (dayKey() !== today){ listen(); return; }
+  const late = tickets.filter(x => x.status === "ready" && !x.seenAt && Date.now() - (ms(x.readyAt)||Date.now()) > NOT_SEEN_MS).map(x => x.id).join();
   if (late !== lastLate){ lastLate = late; if (!settingsOpen && !document.activeElement?.matches("input,select")) render(); }
 }, 1000);
 </script>
