@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EEF1F5">
+<title>Start free trial · ابدأ التجربة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="ui.css">
+<style>
+.page{min-height:100%;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
+@media (max-width:860px){.page{grid-template-columns:1fr}}
+.side{background:var(--ink);color:#fff;padding:40px max(28px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:22px}
+.side a.home{color:#C9D2E0;text-decoration:none;font-size:14px}
+.side h1{font-size:clamp(26px,3vw,36px);line-height:1.2;margin:auto 0 0;font-weight:800}
+.side ul{list-style:none;margin:0 0 auto;padding:0;display:flex;flex-direction:column;gap:14px;color:#C9D2E0}
+.side li{display:grid;grid-template-columns:22px 1fr;gap:10px}
+.side li::before{content:"✓";color:var(--amber);font-weight:700}
+@media (max-width:860px){.side{padding:24px 20px;gap:12px}.side h1{margin:0;font-size:24px}.side ul{display:none}}
+.main{display:grid;place-items:center;padding:32px max(20px,env(safe-area-inset-right))}
+form{width:min(460px,100%);display:flex;flex-direction:column;gap:16px}
+form h2{margin:0;font-size:24px}
+form .sub{margin:-8px 0 4px;color:var(--muted)}
+.f label{display:block;font-size:13.5px;font-weight:500;margin-bottom:6px}
+.f input{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 14px;background:#fff;font-size:16px}
+.f .hint{font-size:12.5px;color:var(--muted);margin-top:5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.two{grid-template-columns:1fr}}
+hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.go{padding:15px;font-size:16px;font-weight:700;border-radius:var(--r)}
+.alt{text-align:center;color:var(--muted);font-size:14px;margin:0}
+.alt a{color:var(--teal);font-weight:500}
+.top{display:flex;justify-content:flex-end}
+.langb{border:0;background:var(--card);border-radius:99px;padding:6px 13px;font-size:13px;color:var(--muted)}
+.done{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.done .tick{width:72px;height:72px;border-radius:50%;background:var(--good-soft);color:var(--good);display:grid;place-items:center;font-size:36px;font-weight:800}
+</style>
+</head>
+<body>
+<div class="page">
+  <aside class="side">
+    <a class="home" href="./" id="t-home"></a>
+    <h1 id="t-side"></h1>
+    <ul><li id="t-b1"></li><li id="t-b2"></li><li id="t-b3"></li></ul>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<script type="module">
+import { auth, callFn, getLang, setLang, makeT, applyDir, esc } from "./shared.js";
+import { createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { db } from "./shared.js";
+
+const TX = {
+  ar: { home:"← الصفحة الرئيسية", side:"ابدأ تجربتك المجانية لمدة 30 يوماً", b1:"جاهز للاستخدام خلال دقيقة", b2:"حتى 3 فروع خلال التجربة", b3:"بدون دفع مسبق",
+    title:"إنشاء حساب المطعم", sub:"املأ البيانات، وستكون شاشة الطلبات جاهزة فوراً.", lang:"English",
+    rest:"اسم المطعم أو المقهى", restPh:"مثال: شاورما الشام", branch:"اسم الفرع الأول", branchPh:"مثال: المزة", branchHint:"تقدر تضيف فروعاً أخرى لاحقاً.",
+    phone:"رقم واتساب", phoneHint:"للتواصل معك بخصوص الحساب والدفع.", email:"البريد الإلكتروني", pass:"كلمة المرور", passHint:"6 أحرف على الأقل.",
+    go:"أنشئ الحساب وابدأ التجربة", going:"جارٍ إنشاء الحساب…", have:"لديك حساب؟", signIn:"سجّل الدخول",
+    eExists:"هذا البريد مستخدم. سجّل الدخول بدلاً من ذلك.", eWeak:"كلمة المرور قصيرة. استخدم 6 أحرف على الأقل.", eEmail:"البريد الإلكتروني غير صحيح.",
+    ePhone:"اكتب رقم واتساب صحيح، مثل: 0944123456", eGeneric:"تعذّر إنشاء الحساب. تأكد من الاتصال وحاول مرة ثانية.",
+    doneT:"حسابك جاهز", doneL:"بدأت تجربتك المجانية لمدة 30 يوماً.", open:"افتح لوحة التحكم" },
+  en: { home:"← Home", side:"Start your 30-day free trial", b1:"Ready to use in a minute", b2:"Up to 3 branches during the trial", b3:"Nothing to pay upfront",
+    title:"Create your restaurant account", sub:"Fill this in and your order screen is ready right away.", lang:"عربي",
+    rest:"Restaurant or café name", restPh:"e.g. Shawarma Al-Sham", branch:"First branch name", branchPh:"e.g. Mezzeh", branchHint:"You can add more branches later.",
+    phone:"WhatsApp number", phoneHint:"So we can reach you about your account and payment.", email:"Email", pass:"Password", passHint:"At least 6 characters.",
+    go:"Create account and start trial", going:"Creating your account…", have:"Already have an account?", signIn:"Sign in",
+    eExists:"This email already has an account. Sign in instead.", eWeak:"Password too short. Use at least 6 characters.", eEmail:"That email doesn't look right.",
+    ePhone:"Enter a valid WhatsApp number, e.g. 0944123456", eGeneric:"Couldn't create the account. Check the connection and try again.",
+    doneT:"Your account is ready", doneL:"Your 30-day free trial has started.", open:"Open your dashboard" }
+};
+const t = makeT(TX);
+const main = document.getElementById("main");
+let busy = false, keep = {};
+
+function side(){
+  applyDir();
+  for (const k of ["home","side","b1","b2","b3"]) document.getElementById("t-" + k).textContent = t(k);
+}
+function form(err = ""){
+  side();
+  main.innerHTML = `<form id="sf" novalidate>
+    <div class="top"><button class="langb" type="button" id="lg">${t("lang")}</button></div>
+    <h2>${t("title")}</h2><p class="sub">${t("sub")}</p>
+    <div class="two">
+      <div class="f"><label for="rest">${t("rest")}</label><input id="rest" required maxlength="60" placeholder="${t("restPh")}" value="${esc(keep.rest||"")}"></div>
+      <div class="f"><label for="branch">${t("branch")}</label><input id="branch" required maxlength="40" placeholder="${t("branchPh")}" value="${esc(keep.branch||"")}"><div class="hint">${t("branchHint")}</div></div>
+    </div>
+    <div class="f"><label for="phone">${t("phone")}</label><input id="phone" type="tel" inputmode="tel" dir="ltr" required placeholder="09xx xxx xxx" value="${esc(keep.phone||"")}"><div class="hint">${t("phoneHint")}</div></div>
+    <hr>
+    <div class="f"><label for="email">${t("email")}</label><input id="email" type="email" dir="ltr" autocomplete="username" required value="${esc(keep.email||"")}"></div>
+    <div class="f"><label for="pass">${t("pass")}</label><input id="pass" type="password" dir="ltr" autocomplete="new-password" required minlength="6"><div class="hint">${t("passHint")}</div></div>
+    <p class="err" role="alert" id="err">${esc(err)}</p>
+    <button class="btn primary go" type="submit" ${busy ? "disabled" : ""}>${busy ? t("going") : t("go")}</button>
+    <p class="alt">${t("have")} <a href="owner.html">${t("signIn")}</a></p>
+  </form>`;
+}
+function done(){
+  side();
+  main.innerHTML = `<div class="done"><div class="tick">✓</div><h2 style="margin:0">${t("doneT")}</h2><p style="margin:0;color:var(--muted)">${t("doneL")}</p>
+    <a class="btn primary go" href="owner.html?welcome=1" style="min-width:240px">${t("open")}</a></div>`;
+  setTimeout(() => location.href = "owner.html?welcome=1", 1500);
+}
+const val = id => (document.getElementById(id)?.value || "").trim();
+function normPhone(p){ let d = p.replace(/[^0-9+]/g, ""); if (/^09\d{8}$/.test(d)) d = "+963" + d.slice(1); if (/^9\d{8}$/.test(d)) d = "+963" + d; return d; }
+
+document.addEventListener("click", e => { if (e.target.id === "lg"){ keep = { rest: val("rest"), branch: val("branch"), phone: val("phone"), email: val("email") }; setLang(getLang() === "ar" ? "en" : "ar"); form(); } });
+document.addEventListener("submit", async e => {
+  if (e.target.id !== "sf") return;
+  e.preventDefault(); if (busy) return;
+  keep = { rest: val("rest"), branch: val("branch"), phone: val("phone"), email: val("email") };
+  const pass = document.getElementById("pass").value, phone = normPhone(keep.phone);
+  if (keep.rest.length < 2){ form(); document.getElementById("rest").focus(); return; }
+  if (keep.branch.length < 2){ form(); document.getElementById("branch").focus(); return; }
+  if (!/^\+?\d{9,15}$/.test(phone)){ form(t("ePhone")); document.getElementById("phone").focus(); return; }
+  busy = true; form();
+  try {
+    if (!auth.currentUser) await createUserWithEmailAndPassword(auth, keep.email, pass);
+    await callFn("createAccount", { restaurant: keep.rest, branch: keep.branch, phone });
+    busy = false; done();
+  } catch(x){
+    busy = false; console.error(x);
+    const c = x.code || "";
+    form(c.includes("email-already-in-use") ? t("eExists") : c.includes("weak-password") ? t("eWeak") : c.includes("invalid-email") ? t("eEmail")
+      : c.includes("already-exists") ? t("eExists") : t("eGeneric"));
+  }
+});
+
+// Someone who already has an account goes straight to the dashboard.
+onAuthStateChanged(auth, async user => {
+  if (user && !busy){
+    try { const u = await getDoc(doc(db, "users", user.uid)); if (u.exists()){ location.replace("owner.html"); return; } } catch(e){}
+  }
+  if (!main.innerHTML) form();
+});
+form();
+</script>
+</body>
+</html>

@@ -21,7 +21,7 @@ self.addEventListener("push", event => {
 self.addEventListener("notificationclick", event => {
   event.notification.close();
   const d = event.notification.data || {};
-  const url = new URL("./?v=" + encodeURIComponent(d.venueId || "") + "&t=" + encodeURIComponent(d.ticketId || ""), self.registration.scope).href;
+  const url = new URL("o.html?v=" + encodeURIComponent(d.venueId || "") + "&t=" + encodeURIComponent(d.ticketId || ""), self.registration.scope).href;
   event.waitUntil((async () => {
     const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     for (const c of all) if (c.url.includes("t=" + encodeURIComponent(d.ticketId || ""))) { await c.focus(); return; }

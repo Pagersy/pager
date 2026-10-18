@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EEF1F5">
+<title>Owner dashboard · لوحة صاحب المطعم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="ui.css">
+<style>
+.wrap{max-width:1180px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right)) 56px max(16px,env(safe-area-inset-left))}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-top:env(safe-area-inset-top)}
+.shop{display:flex;align-items:center;gap:12px;margin-inline-end:auto;min-width:0}
+.mark{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:19px;flex:none}
+.shop h1{font-size:19px;margin:0;line-height:1.2}
+.shop small{color:var(--muted);font-size:13px}
+.notice{margin-top:18px;border-radius:var(--r-lg);padding:18px 20px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center}
+.notice b{font-size:17px;display:block}
+.notice p{margin:2px 0 0}
+.notice .btn{margin-inline-start:auto}
+.notice.trial{background:var(--card)}
+.notice.trial .days{font-size:34px;font-weight:800;line-height:1;color:var(--teal);min-width:52px;text-align:center}
+.notice.paid{background:var(--good-soft);color:#14532D}
+.notice.grace{background:var(--bad);color:#fff}
+.notice.grace .btn{background:#fff;color:var(--bad);border-color:#fff;font-weight:700}
+.notice.blocked{background:var(--ink);color:#fff}
+.notice.blocked .btn{background:var(--amber);border-color:var(--amber);color:var(--amber-ink);font-weight:700}
+.welcome{margin-top:18px;background:var(--ink);color:#fff;border-radius:var(--r-lg);padding:22px}
+.welcome h2{margin:0 0 12px;font-size:20px}
+.welcome ol{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:8px;color:#D5DCE7}
+.welcome ol b{color:#fff}
+.welcome .x{float:inline-end;background:transparent;border:0;color:#C9D2E0;font-size:14px}
+h2.sec{font-size:17px;margin:30px 4px 12px;display:flex;align-items:center;gap:10px}
+h2.sec small{color:var(--muted);font-weight:400;font-size:13.5px}
+.branches{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.br{background:var(--card);border-radius:var(--r-lg);padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 2px rgba(20,32,51,.05);min-width:0}
+.br h3{margin:0;font-size:18px}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.fig{background:var(--sunk);border-radius:var(--r-sm);padding:8px 10px}
+.fig b{display:block;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.fig span{font-size:11.5px;color:var(--muted)}
+.links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.links .btn{padding:11px 10px}
+.staff{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.staff h4{margin:0;font-size:13.5px;color:var(--muted);font-weight:500}
+.person{display:flex;align-items:center;gap:8px;font-size:14px;min-width:0}
+.person span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;flex:1;text-align:start}
+.person .btn{padding:5px 10px;font-size:13px}
+.addstaff{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:6px}
+.addstaff input{min-width:0;border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 10px;background:var(--sunk);font-size:14px}
+.addstaff .btn{padding:9px 12px;font-size:14px}
+@media (max-width:420px){.addstaff{grid-template-columns:1fr 1fr}.addstaff .btn{grid-column:1/-1}}
+.msg{font-size:13px;margin:0;min-height:1em}
+.msg.bad{color:var(--bad)}
+.msg.good{color:var(--good)}
+.addbr{background:transparent;border:2px dashed var(--line);border-radius:var(--r-lg);padding:18px;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.addbr input{border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;background:var(--card)}
+.addbr p{margin:0;color:var(--muted);font-size:14px}
+.brand{background:var(--card);border-radius:var(--r-lg);padding:18px;display:grid;grid-template-columns:minmax(0,2fr) 90px 110px auto;gap:12px;align-items:end}
+@media (max-width:700px){.brand{grid-template-columns:1fr 1fr}}
+.brand label{display:block;font-size:13px;font-weight:500;margin-bottom:5px}
+.brand input{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 12px;background:var(--sunk)}
+.brand input[type=color]{height:46px;padding:4px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+import { db, esc, ms, mmss, dayKey, requireStaff, logout, getLang, setLang, makeT, showFatal, callFn, accountState, whatsappLink, SUPPORT_NUMBER, param } from "./shared.js";
+import { collection, doc, query, where, onSnapshot, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const TX = {
+  ar: {
+    lang:"English", out:"خروج", owner:"لوحة صاحب المطعم",
+    trialT:"تجربة مجانية", trialL:"يوماً متبقياً. تنتهي في {d}.", trialPay:"اشترك الآن",
+    paidT:"الاشتراك فعّال", paidL:"مدفوع حتى {d}.",
+    graceT:"انتهت التجربة. ادفع خلال {n} أيام", graceL:"بعدها تتوقف الطلبات الجديدة في كل الفروع حتى الدفع. بياناتك محفوظة.",
+    blockedT:"الطلبات الجديدة متوقفة", blockedL:"انتهت الفترة. ادفع لإعادة تشغيل كل الفروع فوراً. بياناتك محفوظة.",
+    payWa:"ادفع عبر واتساب", suspT:"الحساب موقوف مؤقتاً", suspL:"الطلبات الجديدة متوقفة في كل الفروع. تواصل معنا لإعادة تشغيل الحساب.", payNoWa:"تواصل معنا للدفع", payMsg:"مرحباً، أريد دفع اشتراك {r} (الحساب {id}).",
+    welT:"حسابك جاهز. ابدأ بثلاث خطوات:", hide:"إخفاء",
+    w1:"<b>على تابلت الكاشير:</b> افتح «شاشة الموظفين» للفرع وسجّل الدخول.",
+    w2:"<b>على شاشة مقابل الزبون:</b> افتح «شاشة الزبائن» واضغط ملء الشاشة.",
+    w3:"<b>عند كل طلب:</b> اضغط «طلب جديد»، والزبون يمسح الرمز. عندما يجهز، اضغط «جاهز».",
+    branches:"الفروع", branchesS:"{n} من {m}", today:"اليوم",
+    fOrders:"طلبات", fDone:"استلام", fPrep:"تحضير", fRating:"تقييم",
+    staffScr:"شاشة الموظفين", custScr:"شاشة الزبائن",
+    logins:"حسابات موظفي هذا الفرع", noLogins:"لا توجد حسابات بعد. أضف حساباً لكل جهاز أو موظف.",
+    email:"البريد", pass:"كلمة المرور", add:"إضافة", remove:"حذف", sure:"تأكيد الحذف",
+    added:"تمت إضافة الحساب. سجّل الدخول به على جهاز الفرع.", removed:"تم حذف الحساب.",
+    addBr:"إضافة فرع", brPh:"اسم الفرع، مثال: المالكي", addBrBtn:"أضف الفرع", limit:"وصلت للحد الأقصى ({m} فروع) خلال التجربة. اشترك لإضافة المزيد.",
+    brandT:"هوية المطعم", brandS:"تظهر في كل الفروع وصفحة الزبون", bName:"اسم المطعم", bInitial:"حرف الشعار", bColor:"اللون", save:"حفظ", saved:"تم الحفظ.",
+    errs:{ "already-exists":"هذا البريد مستخدم.", "invalid-argument":"تأكد من البيانات المدخلة.", "resource-exhausted":"وصلت للحد الأقصى من الفروع.", "permission-denied":"هذه العملية لصاحب الحساب فقط.", generic:"تعذّر تنفيذ العملية. تأكد من الاتصال." }
+  },
+  en: {
+    lang:"عربي", out:"Sign out", owner:"Owner dashboard",
+    trialT:"Free trial", trialL:"days left. Ends on {d}.", trialPay:"Subscribe now",
+    paidT:"Subscription active", paidL:"Paid until {d}.",
+    graceT:"Your trial has ended. Pay within {n} days", graceL:"After that, new orders stop in every branch until payment. Your data is kept.",
+    blockedT:"New orders are paused", blockedL:"Your period has ended. Pay to switch every branch back on right away. Your data is kept.",
+    payWa:"Pay via WhatsApp", suspT:"Account paused", suspL:"New orders are stopped in every branch. Contact us to switch the account back on.", payNoWa:"Contact us to pay", payMsg:"Hello, I'd like to pay the subscription for {r} (account {id}).",
+    welT:"Your account is ready. Start in three steps:", hide:"Hide",
+    w1:"<b>On the cashier's tablet:</b> open the branch's Staff screen and sign in.",
+    w2:"<b>On a screen facing the customer:</b> open the Customer screen and tap Full screen.",
+    w3:"<b>For each order:</b> tap New order and the customer scans the code. When it's ready, tap Ready.",
+    branches:"Branches", branchesS:"{n} of {m}", today:"Today",
+    fOrders:"Orders", fDone:"Picked up", fPrep:"Prep", fRating:"Rating",
+    staffScr:"Staff screen", custScr:"Customer screen",
+    logins:"Staff logins for this branch", noLogins:"No logins yet. Add one for each device or employee.",
+    email:"Email", pass:"Password", add:"Add", remove:"Remove", sure:"Confirm remove",
+    added:"Login added. Sign in with it on the branch's device.", removed:"Login removed.",
+    addBr:"Add a branch", brPh:"Branch name, e.g. Malki", addBrBtn:"Add branch", limit:"You've reached the limit ({m} branches) during the trial. Subscribe to add more.",
+    brandT:"Restaurant identity", brandS:"Used in every branch and on the customer page", bName:"Restaurant name", bInitial:"Logo letter", bColor:"Colour", save:"Save", saved:"Saved.",
+    errs:{ "already-exists":"This email is already used.", "invalid-argument":"Check what you entered.", "resource-exhausted":"Branch limit reached.", "permission-denied":"Only the account owner can do this.", generic:"Couldn't do that. Check the connection." }
+  }
+};
+const t = makeT(TX);
+const root = document.getElementById("root");
+let acc = null, accountId = null, stats = {}, subs = [], msgs = {}, confirmRm = null, showWelcome = param("welcome") === "1", busy = false;
+window.addEventListener("unhandledrejection", e => showFatal(root, e.reason));
+const errText = e => { const c = String(e?.code || "").replace("functions/", ""); return (TX[getLang()].errs[c]) || TX[getLang()].errs.generic; };
+const fmtDate = m => new Date(m).toLocaleDateString(getLang() === "ar" ? "ar-SY" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+requireStaff(root, ctx => {
+  accountId = ctx.accountId;
+  onSnapshot(doc(db, "accounts", accountId), s => { acc = s.data(); watchBranches(); render(); }, err => showFatal(root, err));
+}, { ownerOnly: true });
+
+function watchBranches(){
+  const ids = Object.keys(acc?.branches || {}).sort();
+  if (ids.join() === subs.map(s => s.id).join()) return;
+  subs.forEach(s => s.off()); subs = [];
+  const day = dayKey();
+  for (const id of ids){
+    const off = onSnapshot(query(collection(db, "venues", id, "tickets"), where("day", "==", day)), snap => {
+      const tk = snap.docs.map(d => d.data()), done = tk.filter(x => x.status === "collected");
+      const waits = done.map(x => (ms(x.readyAt)||0) - (ms(x.linkedAt) || ms(x.createdAt) || 0)).filter(x => x > 0);
+      const rated = done.filter(x => x.rating);
+      stats[id] = { orders: tk.filter(x => x.status !== "cancelled").length, done: done.length,
+        prep: waits.length ? mmss(waits.reduce((a,b)=>a+b,0)/waits.length) : "—",
+        rating: rated.length ? (rated.reduce((a,x)=>a+x.rating,0)/rated.length).toFixed(1) : "—" };
+      render();
+    }, () => {});
+    subs.push({ id, off });
+  }
+}
+
+function statusNotice(){
+  const st = accountState(acc), wa = whatsappLink(t("payMsg", { r: acc.name, id: accountId }));
+  const pay = label => wa ? `<a class="btn" href="${wa}" target="_blank" rel="noopener">${label}</a>` : `<span class="btn" style="cursor:default">${t("payNoWa")}${SUPPORT_NUMBER ? " " + esc(SUPPORT_NUMBER) : ""}</span>`;
+  if (st.state === "trial") return `<div class="notice trial"><div class="days num">${st.daysLeft}</div><div><b>${t("trialT")}</b><p>${t("trialL", { d: fmtDate(st.end) })}</p></div>${pay(t("trialPay"))}</div>`;
+  if (st.state === "paid") return `<div class="notice paid"><div><b>${t("paidT")}</b><p>${t("paidL", { d: fmtDate(st.end) })}</p></div></div>`;
+  if (st.state === "grace") return `<div class="notice grace" role="alert"><div><b>${t("graceT", { n: st.daysLeft })}</b><p>${t("graceL")}</p></div>${pay(t("payWa"))}</div>`;
+  if (st.state === "suspended") return `<div class="notice blocked" role="alert"><div><b>${t("suspT")}</b><p>${t("suspL")}</p></div>${pay(t("payNoWa"))}</div>`;
+  if (st.state === "blocked") return `<div class="notice blocked" role="alert"><div><b>${t("blockedT")}</b><p>${t("blockedL")}</p></div>${pay(t("payWa"))}</div>`;
+  return "";
+}
+
+function branchCard(id, name){
+  const s = stats[id] || { orders: "…", done: "…", prep: "…", rating: "…" };
+  const staff = Object.entries(acc.staff || {}).filter(([, v]) => v.venueId === id);
+  const m = msgs[id];
+  return `<article class="br"><h3>${esc(name)}</h3>
+    <div class="figs" aria-label="${t("today")}">
+      <div class="fig"><b>${s.orders}</b><span>${t("fOrders")}</span></div><div class="fig"><b>${s.done}</b><span>${t("fDone")}</span></div>
+      <div class="fig"><b>${s.prep}</b><span>${t("fPrep")}</span></div><div class="fig"><b>${s.rating}</b><span>${t("fRating")}</span></div></div>
+    <div class="links"><a class="btn primary" href="staff.html?v=${encodeURIComponent(id)}">${t("staffScr")}</a><a class="btn" href="display.html?v=${encodeURIComponent(id)}" target="_blank" rel="noopener">${t("custScr")}</a></div>
+    <div class="staff"><h4>${t("logins")}</h4>
+      ${staff.length ? staff.map(([uid, v]) => `<div class="person"><span>${esc(v.email)}</span>
+        <button class="btn ${confirmRm === uid ? "primary" : "quiet"}" data-act="rm" data-uid="${uid}" data-v="${id}">${confirmRm === uid ? t("sure") : t("remove")}</button></div>`).join("")
+        : `<p class="msg" style="color:var(--muted)">${t("noLogins")}</p>`}
+      <form class="addstaff" data-v="${id}"><input name="email" type="email" dir="ltr" placeholder="${t("email")}" required autocomplete="off"><input name="password" type="text" dir="ltr" placeholder="${t("pass")}" minlength="6" required autocomplete="off"><button class="btn" type="submit">${t("add")}</button></form>
+      <p class="msg ${m?.ok ? "good" : "bad"}">${m ? esc(m.text) : ""}</p></div>
+  </article>`;
+}
+
+function render(){
+  if (!acc) return;
+  const active = document.activeElement, focusSel = active?.name ? `form[data-v="${active.form?.dataset.v}"] [name="${active.name}"]` : active?.id ? "#" + active.id : null;
+  const typed = [...document.querySelectorAll("input")].map(i => [i.id || (i.form?.dataset.v + ":" + i.name), i.value]);
+  const ids = Object.entries(acc.branches || {}).sort((a,b) => a[1].localeCompare(b[1]));
+  const max = acc.maxBranches || 3, atLimit = ids.length >= max;
+  root.innerHTML = `<div class="wrap">
+    <header class="bar"><div class="shop"><div class="mark" style="background:${esc(acc.color || "#7A2E3A")}">${esc(acc.initial || acc.name.slice(0,1))}</div>
+      <div><h1>${esc(acc.name)}</h1><small>${t("owner")}</small></div></div>
+      <button class="btn quiet" data-act="lang">${t("lang")}</button><button class="btn quiet" data-act="logout">${t("out")}</button></header>
+    ${statusNotice()}
+    ${showWelcome ? `<div class="welcome"><button class="x" data-act="hidewel">${t("hide")}</button><h2>${t("welT")}</h2><ol><li>${t("w1")}</li><li>${t("w2")}</li><li>${t("w3")}</li></ol></div>` : ""}
+    <h2 class="sec">${t("branches")} <small>${t("branchesS", { n: ids.length, m: max })} · ${t("today")}</small></h2>
+    <div class="branches">${ids.map(([id, name]) => branchCard(id, name)).join("")}
+      <form class="addbr" id="abf"><b>${t("addBr")}</b>
+        ${atLimit ? `<p>${t("limit", { m: max })}</p>` : `<input id="abn" placeholder="${t("brPh")}" maxlength="40" required><button class="btn primary" type="submit" ${busy ? "disabled" : ""}>${t("addBrBtn")}</button>`}
+        <p class="msg bad">${msgs.branch ? esc(msgs.branch) : ""}</p></form>
+    </div>
+    <h2 class="sec">${t("brandT")} <small>${t("brandS")}</small></h2>
+    <form class="brand" id="bf"><div><label for="bn">${t("bName")}</label><input id="bn" value="${esc(acc.name)}" maxlength="60" required></div>
+      <div><label for="bi">${t("bInitial")}</label><input id="bi" value="${esc(acc.initial || "")}" maxlength="2"></div>
+      <div><label for="bc">${t("bColor")}</label><input id="bc" type="color" value="${esc(acc.color || "#7A2E3A")}"></div>
+      <button class="btn primary" type="submit">${t("save")}</button></form>
+    <p class="msg good" style="margin:8px 4px">${msgs.brand ? esc(msgs.brand) : ""}</p>
+  </div>`;
+  for (const [k, v] of typed){ if (!v) continue; const el = k.includes(":") ? document.querySelector(`form[data-v="${k.split(":")[0]}"] [name="${k.split(":")[1]}"]`) : document.getElementById(k); if (el && el.type !== "color" && !["bn","bi"].includes(el.id)) el.value = v; }
+  if (focusSel){ const f = document.querySelector(focusSel); if (f) f.focus(); }
+}
+
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act;
+  if (a === "lang"){ setLang(getLang() === "ar" ? "en" : "ar"); render(); }
+  if (a === "logout") logout();
+  if (a === "hidewel"){ showWelcome = false; history.replaceState(null, "", "owner.html"); render(); }
+  if (a === "rm"){
+    const uid = b.dataset.uid, v = b.dataset.v;
+    if (confirmRm !== uid){ confirmRm = uid; render(); return; }
+    confirmRm = null;
+    try { await callFn("removeStaff", { uid }); msgs[v] = { ok: true, text: t("removed") }; } catch(x){ msgs[v] = { ok: false, text: errText(x) }; }
+    render();
+  }
+});
+
+document.addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target;
+  if (f.classList.contains("addstaff")){
+    const v = f.dataset.v, email = f.email.value.trim(), password = f.password.value;
+    try {
+      await callFn("addStaff", { venueId: v, email, password }); msgs[v] = { ok: true, text: t("added") };
+      // the card may have been redrawn by a live update meanwhile, so clear the current fields
+      document.querySelectorAll(`form.addstaff[data-v="${v}"] input`).forEach(i => i.value = "");
+    }
+    catch(x){ msgs[v] = { ok: false, text: errText(x) }; }
+    render();
+    document.querySelectorAll(`form.addstaff[data-v="${v}"] input`).forEach(i => { if (msgs[v]?.ok) i.value = ""; });
+  }
+  if (f.id === "abf"){
+    const name = document.getElementById("abn")?.value.trim(); if (!name || busy) return;
+    busy = true; msgs.branch = ""; render();
+    try { await callFn("addBranch", { branch: name }); const el = document.getElementById("abn"); if (el) el.value = ""; }
+    catch(x){ msgs.branch = errText(x); }
+    busy = false; render();
+  }
+  if (f.id === "bf"){
+    const name = document.getElementById("bn").value.trim(), initial = document.getElementById("bi").value.trim(), color = document.getElementById("bc").value;
+    if (!name) return;
+    try {
+      const batch = writeBatch(db);
+      batch.update(doc(db, "accounts", accountId), { name, initial, color });
+      for (const id of Object.keys(acc.branches || {})) batch.update(doc(db, "venues", id), { name, initial, color });
+      await batch.commit();
+      msgs.brand = t("saved");
+    } catch(x){ msgs.brand = errText(x); }
+    render();
+  }
+});
+</script>
+</body>
+</html>

@@ -26,6 +26,14 @@
 .tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .tools .btn{padding:8px 12px;font-size:14px}
 
+.banner{margin-top:14px;border-radius:var(--r);padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:14.5px}
+.banner .btn{margin-inline-start:auto;padding:7px 14px}
+.banner.soft{background:var(--amber-soft);color:#6B4500}
+.banner.bad{background:var(--bad);color:#fff}
+.banner.bad .btn{background:#fff;color:var(--bad);border-color:#fff;font-weight:700}
+.banner.dark{background:var(--ink);color:#fff}
+.banner.dark .btn{background:var(--amber);border-color:var(--amber);color:var(--amber-ink);font-weight:700}
+select.btn{appearance:auto;padding:8px 10px}
 /* new order */
 .compose{margin-top:16px;background:var(--card);border-radius:var(--r-lg);padding:16px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;box-shadow:0 1px 2px rgba(20,32,51,.05)}
 .next{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:96px;padding:6px 14px;border-inline-end:1px solid var(--line)}
@@ -104,7 +112,7 @@
 <div id="root"></div>
 
 <script type="module">
-import { db, esc, ms, mmss, dayKey, customerUrl, drawQR, requireStaff, logout, getLang, setLang, makeT, showFatal } from "./shared.js";
+import { db, esc, ms, mmss, dayKey, customerUrl, drawQR, requireStaff, logout, getLang, setLang, makeT, showFatal, accountState, whatsappLink, SUPPORT_NUMBER } from "./shared.js";
 import { collection, doc, query, where, onSnapshot, addDoc, updateDoc, runTransaction, serverTimestamp, increment }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -125,7 +133,10 @@ const TX = {
     sNote:"سطر إضافي في شاشة النداء", sNotePh:"مثال: المناديل جنب الباب", sReview:"رابط تقييم Google",
     sReviewHint:"من Google Business Profile ← «اطلب تقييمات». يظهر لكل الزبائن بعد الاستلام.",
     sMode:"رقم الطلب", modeAuto:"تلقائي، يبدأ من 1 كل يوم", modeManual:"أكتب رقم الفاتورة من نظام الكاشير",
-    save:"حفظ", close:"إلغاء", errCreate:"تعذّر إنشاء الطلب. تأكد من الاتصال.", errSave:"تعذّر الحفظ.", errAct:"تعذّر تنفيذ العملية."
+    save:"حفظ", close:"إلغاء", errCreate:"تعذّر إنشاء الطلب. تأكد من الاتصال.", errSave:"تعذّر الحفظ.", errAct:"تعذّر تنفيذ العملية.",
+    dash:"لوحة التحكم", branch:"الفرع",
+    trialSoon:"التجربة المجانية تنتهي خلال {n} أيام.", graceB:"انتهت التجربة. ادفع خلال {n} أيام وإلا ستتوقف الطلبات الجديدة.",
+    blockedB:"الطلبات الجديدة متوقفة حتى يتم الدفع. الطلبات الحالية تعمل كالمعتاد.", suspB:"الحساب موقوف مؤقتاً. تواصل معنا لإعادة تشغيله.", payWa:"ادفع عبر واتساب", payMsg:"مرحباً، أريد دفع اشتراك {r}.", contact:"تواصل معنا"
   },
   en: {
     online:"Online", offline:"Offline · changes save when the connection is back", cashier:"Cashier", bar:"Bar", both:"Both",
@@ -143,19 +154,24 @@ const TX = {
     sNote:"Extra line on the call screen", sNotePh:"e.g. Napkins are by the door", sReview:"Google review link",
     sReviewHint:"From Google Business Profile → \"Ask for reviews\". Shown to every customer after pickup.",
     sMode:"Order number", modeAuto:"Automatic, starts at 1 each day", modeManual:"Type the receipt number from the till",
-    save:"Save", close:"Cancel", errCreate:"Couldn't create the order. Check the connection.", errSave:"Couldn't save.", errAct:"Couldn't do that. Try again."
+    save:"Save", close:"Cancel", errCreate:"Couldn't create the order. Check the connection.", errSave:"Couldn't save.", errAct:"Couldn't do that. Try again.",
+    dash:"Dashboard", branch:"Branch",
+    trialSoon:"Your free trial ends in {n} days.", graceB:"Your trial has ended. Pay within {n} days or new orders will stop.",
+    blockedB:"New orders are paused until payment. Current orders still work.", suspB:"This account is paused. Contact us to switch it back on.", payWa:"Pay via WhatsApp", payMsg:"Hello, I'd like to pay the subscription for {r}.", contact:"Contact us"
   }
 };
 const t = makeT(TX);
 const root = document.getElementById("root");
+let userRole = null, ACC = null, accountId = null;
 let V = null, venueId = null, tickets = [], role = "both", showQR = null, settingsOpen = false, today = dayKey(), unsub = null, creating = false, online = true;
 try { role = localStorage.getItem("pg-role") || "both"; } catch(e){}
 const NOT_SEEN_MS = 60000;
 window.addEventListener("error", e => showFatal(root, e.error || e.message));
 window.addEventListener("unhandledrejection", e => showFatal(root, e.reason));
 
-requireStaff(root, ({ venueId: id, venue }) => {
-  venueId = id; V = venue;
+requireStaff(root, ({ venueId: id, venue, role: r, accountId: aid, account }) => {
+  venueId = id; V = venue; userRole = r; accountId = aid; ACC = account;
+  if (aid) onSnapshot(doc(db, "accounts", aid), s => { ACC = s.data() || null; if (!settingsOpen) render(); }, () => {});
   onSnapshot(doc(db, "venues", venueId), s => { if (s.exists()){ V = s.data(); if (!settingsOpen) render(); } });
   listen();
 });
@@ -193,21 +209,24 @@ function render(){
   root.innerHTML = `<div class="wrap">
     <header class="bar">
       <div class="shop"><div class="mark" style="background:${esc(color)}">${esc(V.initial || (V.name||"").slice(0,1))}</div>
-        <div style="min-width:0"><h1>${esc(V.name)}</h1><div class="status ${online ? "" : "off"}"><i></i>${online ? t("online") : t("offline")}</div></div></div>
+        <div style="min-width:0"><h1>${esc(V.name)}${V.branch && !(userRole === "owner" && Object.keys(ACC?.branches || {}).length > 1) ? ` <span style="font-weight:500;color:var(--muted)">· ${esc(V.branch)}</span>` : ""}</h1><div class="status ${online ? "" : "off"}"><i></i>${online ? t("online") : t("offline")}</div></div></div>
       <div class="seg" role="group" aria-label="Device">
         <button data-act="role" data-v="cashier" aria-pressed="${role==="cashier"}">${t("cashier")}</button>
         <button data-act="role" data-v="bar" aria-pressed="${role==="bar"}">${t("bar")}</button>
         <button data-act="role" data-v="both" aria-pressed="${role==="both"}">${t("both")}</button>
       </div>
       <div class="tools">
-        <a class="btn" href="display.html" target="_blank" rel="noopener">${t("display")}</a>
+        ${userRole === "owner" && Object.keys(ACC?.branches || {}).length > 1 ? `<select class="btn" id="brsel" aria-label="${t("branch")}">${Object.entries(ACC.branches).sort((a,b) => a[1].localeCompare(b[1])).map(([id, n]) => `<option value="${esc(id)}" ${id === venueId ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>` : ""}
+        <a class="btn" href="display.html?v=${encodeURIComponent(venueId)}" target="_blank" rel="noopener">${t("display")}</a>
+        ${userRole === "owner" ? `<a class="btn" href="owner.html">${t("dash")}</a>` : ""}
         <button class="btn" data-act="settings">${t("settings")}</button>
         <button class="btn quiet" data-act="lang">${t("lang")}</button>
         <button class="btn quiet" data-act="logout">${t("out")}</button>
       </div>
     </header>
 
-    ${showNew ? `<form class="compose" id="nf" autocomplete="off">
+    ${banner()}
+    ${showNew ? `<form class="compose" id="nf" autocomplete="off" ${blocked() ? "inert style=\"opacity:.45\"" : ""}>
       <div class="next">${manual
         ? `<label for="nno" style="font-size:12.5px;color:var(--muted)">${t("receipt")}</label><input id="nno" class="num" inputmode="numeric" placeholder="1083" required>`
         : `<small>${t("next")}</small><b class="num">${nextAuto()}</b>`}</div>
@@ -242,6 +261,18 @@ function render(){
   if (keep.focus && !showQR && !settingsOpen){ const f = document.getElementById(keep.focus); if (f && f.matches("input")) f.focus(); }
   if (showQR){ const el = document.getElementById("qrbox"); if (el && !el.dataset.done){ drawQR(el, customerUrl(venueId, showQR), 240); el.dataset.done = "1"; } }
   tickTimers();
+}
+
+function blocked(){ return ACC ? ["blocked", "suspended"].includes(accountState(ACC).state) : false; }
+function banner(){
+  if (!ACC) return "";
+  const st = accountState(ACC), wa = whatsappLink(t("payMsg", { r: ACC.name }));
+  const pay = wa ? `<a class="btn" href="${wa}" target="_blank" rel="noopener">${t("payWa")}</a>` : (SUPPORT_NUMBER ? `<span>${t("contact")}: <b dir="ltr">${esc(SUPPORT_NUMBER)}</b></span>` : "");
+  if (st.state === "trial" && st.daysLeft <= 5) return `<div class="banner soft">${t("trialSoon", { n: st.daysLeft })} ${pay}</div>`;
+  if (st.state === "grace") return `<div class="banner bad" role="alert"><b>${t("graceB", { n: st.daysLeft })}</b> ${pay}</div>`;
+  if (st.state === "blocked") return `<div class="banner dark" role="alert"><b>${t("blockedB")}</b> ${pay}</div>`;
+  if (st.state === "suspended") return `<div class="banner dark" role="alert"><b>${t("suspB")}</b> ${pay}</div>`;
+  return "";
 }
 
 function stub(x){
@@ -314,6 +345,7 @@ function toast(msg){ const n = document.createElement("div"); n.className = "fat
 document.addEventListener("submit", async e => {
   if (e.target.id === "nf"){
     e.preventDefault(); if (creating) return;
+    if (blocked()){ toast(t("blockedB")); return; }
     const manual = V.numberMode === "manual";
     const typed = manual ? (document.getElementById("nno")?.value || "").trim() : "";
     if (manual && !typed) return;
@@ -340,6 +372,7 @@ document.addEventListener("submit", async e => {
   }
 });
 
+document.addEventListener("change", e => { if (e.target.id === "brsel") location.href = "staff.html?v=" + encodeURIComponent(e.target.value); });
 document.addEventListener("click", async e => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const a = b.dataset.act, id = b.dataset.id;

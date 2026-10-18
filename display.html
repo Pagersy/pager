@@ -100,7 +100,7 @@ function render(){
     built = L.key;
     root.innerHTML = `<div class="screen">
       <header class="top"><div class="mark" style="background:${esc(V.color || "#7A2E3A")}">${esc(V.initial || (V.name||"").slice(0,1))}</div>
-        <h1>${esc(V.name)}</h1><div class="clock" id="clock"></div></header>
+        <h1>${esc(V.name)}${V.branch ? ` <span style="font-weight:500;color:#8B99B1">· ${esc(V.branch)}</span>` : ""}</h1><div class="clock" id="clock"></div></header>
       <div class="main">${L.html}
         <section class="board"><h2>جاهز للاستلام · ${esc(V.counter || "الكاونتر")}<span class="en">Ready for pickup</span></h2><div class="nums" id="nums"></div></section>
       </div></div>
