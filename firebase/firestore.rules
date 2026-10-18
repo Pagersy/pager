@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Staff accounts: users/{uid} = { venueId: "yasmin" }  (created by you in the console)
+    function staffOf(venueId) {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.venueId == venueId;
+    }
+    function changedOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+    function validChannel() {
+      return request.resource.data.channel in ['push', 'page']
+        && (!('pushToken' in request.resource.data)
+            || (request.resource.data.pushToken is string && request.resource.data.pushToken.size() < 400));
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /venues/{venueId} {
+      // Customers need the name, colour and pickup point. A venue can't be listed, only opened by its ID.
+      allow get: if true;
+      allow list: if false;
+      allow create, delete: if false;
+      allow update: if staffOf(venueId)
+        && changedOnly(['name', 'initial', 'color', 'counter', 'note', 'reviewUrl', 'numberMode']);
+
+      match /meta/{docId} {
+        allow read, write: if staffOf(venueId);
+      }
+
+      match /tickets/{ticketId} {
+        // A customer can open their own ticket by its random ID, but can't list the others.
+        allow get: if true;
+        allow list: if staffOf(venueId);
+
+        allow create: if staffOf(venueId)
+          && request.resource.data.status == 'new'
+          && !('pushToken' in request.resource.data);
+
+        allow update: if staffOf(venueId)
+          // customer scans and picks how to be called
+          || (resource.data.status == 'new'
+              && request.resource.data.status == 'waiting'
+              && changedOnly(['status', 'linkedAt', 'channel', 'pushToken'])
+              && request.resource.data.linkedAt == request.time
+              && validChannel())
+          // customer turns notifications on later
+          || (resource.data.status in ['waiting', 'ready']
+              && changedOnly(['channel', 'pushToken'])
+              && validChannel())
+          // customer taps "On my way"
+          || (resource.data.status == 'ready'
+              && changedOnly(['seenAt'])
+              && request.resource.data.seenAt == request.time)
+          // customer rates the visit and leaves a private note
+          || (resource.data.status == 'collected'
+              && changedOnly(['rating', 'feedback'])
+              && (!('rating' in request.resource.data)
+                  || (request.resource.data.rating is int
+                      && request.resource.data.rating >= 1
+                      && request.resource.data.rating <= 5))
+              && (!('feedback' in request.resource.data)
+                  || (request.resource.data.feedback is string
+                      && request.resource.data.feedback.size() <= 500)));
+
+        allow delete: if false;
+
+      }
+    }
+  }
+}
