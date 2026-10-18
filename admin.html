@@ -86,15 +86,37 @@ a.wa{color:#128C7E;text-decoration:none;font-weight:500;direction:ltr;display:in
 <body>
 <div id="root"></div>
 <script type="module">
-import { PRODUCT_NAME } from "./config.js";
-import { auth, db, esc, ms, dayKey, getLang, setLang, makeT, applyDir, accountState, loginView, logout, showFatal } from "./shared.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, doc, getDoc, getDocs, query, where, onSnapshot, updateDoc, addDoc, serverTimestamp, Timestamp }
+import { PRODUCT_NAME, firebaseConfig } from "./config.js";
+import { esc, ms, dayKey, getLang, setLang, makeT, applyDir, accountState, showFatal } from "./shared.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, query, where, onSnapshot, updateDoc, addDoc, serverTimestamp, Timestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// The admin panel keeps its own sign-in, separate from the staff and owner screens in the same browser.
+const adminApp = initializeApp(firebaseConfig, "admin");
+const auth = getAuth(adminApp);
+const db = getFirestore(adminApp);
+setPersistence(auth, browserLocalPersistence).catch(() => {});
+const logout = () => signOut(auth);
+function loginView(root, err = ""){
+  root.innerHTML = `<div class="auth"><form class="auth-card" id="alf">
+    <button class="auth-lang" id="alang" type="button">${t("lang")}</button>
+    <h1>${t("title")}</h1><p>${t("signSub")}</p>
+    <label for="ale">${t("email")}</label><input id="ale" type="email" autocomplete="username" required dir="ltr">
+    <label for="alp">${t("pass")}</label><input id="alp" type="password" autocomplete="current-password" required dir="ltr">
+    <button class="btn primary" type="submit">${t("signIn")}</button><p class="err" role="alert">${esc(err)}</p></form></div>`;
+}
+document.addEventListener("submit", async e => {
+  if (e.target.id !== "alf") return;
+  e.preventDefault();
+  try { await signInWithEmailAndPassword(auth, document.getElementById("ale").value.trim(), document.getElementById("alp").value); }
+  catch(x){ loginView(root, t("bad")); }
+});
 
 const TX = {
   ar: {
-    title:"لوحة الإدارة", lang:"English", out:"خروج", notAdmin:"هذا الحساب ليس حساب إدارة.", notAdminD:"أضف المستند admins/{uid} في Firestore (راجع SETUP.md).",
+    title:"لوحة الإدارة", lang:"English", out:"خروج", signSub:"دخول مدير المنصة. هذا الدخول منفصل عن شاشات المطاعم.", email:"البريد الإلكتروني", pass:"كلمة المرور", signIn:"دخول", bad:"البريد أو كلمة المرور غير صحيحة.", notAdmin:"هذا الحساب ليس حساب إدارة.", notAdminD:"أضف المستند admins/{uid} في Firestore (راجع SETUP.md).",
     tAll:"كل الحسابات", tTrial:"في التجربة", tPaid:"مدفوع", tSoon:"تنتهي خلال 7 أيام", tGrace:"يجب أن يدفع الآن", tStop:"متوقف", tSusp:"موقوف يدوياً", tMonth:"المحصّل هذا الشهر",
     search:"ابحث بالاسم أو البريد أو الرقم", shown:"{n} حساب",
     cName:"المطعم", cWa:"واتساب", cBr:"الفروع", cStatus:"الحالة", cEnds:"ينتهي", cCreated:"تاريخ التسجيل", cLast:"آخر دفعة",
@@ -113,7 +135,7 @@ const TX = {
     history:"سجل الدفعات", noHistory:"لا توجد دفعات بعد.", close:"إغلاق", err:"تعذّر الحفظ. تأكد من الاتصال والصلاحيات."
   },
   en: {
-    title:"Admin", lang:"عربي", out:"Sign out", notAdmin:"This login isn't an admin.", notAdminD:"Add the document admins/{uid} in Firestore (see SETUP.md).",
+    title:"Admin", lang:"عربي", out:"Sign out", signSub:"Platform admin sign-in. Separate from the restaurant screens.", email:"Email", pass:"Password", signIn:"Sign in", bad:"Wrong email or password.", notAdmin:"This login isn't an admin.", notAdminD:"Add the document admins/{uid} in Firestore (see SETUP.md).",
     tAll:"All accounts", tTrial:"In trial", tPaid:"Paid", tSoon:"Ending within 7 days", tGrace:"Must pay now", tStop:"Stopped", tSusp:"Paused by you", tMonth:"Collected this month",
     search:"Search by name, email or number", shown:"{n} accounts",
     cName:"Restaurant", cWa:"WhatsApp", cBr:"Branches", cStatus:"Status", cEnds:"Ends", cCreated:"Signed up", cLast:"Last payment",
@@ -143,7 +165,7 @@ onAuthStateChanged(auth, async user => {
   if (!user){ loginView(root); return; }
   try {
     const a = await getDoc(doc(db, "admins", user.uid));
-    if (!a.exists()){ root.innerHTML = `<div class="auth"><div class="auth-card"><h1>${t("notAdmin")}</h1><p>${t("notAdminD", { uid: esc(user.uid) })}</p><button class="btn" id="lo">${t("out")}</button></div></div>`; return; }
+    if (!a.exists()){ root.innerHTML = `<div class="auth"><div class="auth-card"><h1>${t("notAdmin")}</h1><p>${t("notAdminD", { uid: esc(user.uid) })}</p><button class="btn" id="alo">${t("out")}</button></div></div>`; return; }
   } catch(e){ showFatal(root, e); return; }
   onSnapshot(collection(db, "accounts"), s => { accounts = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, e => showFatal(root, e));
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
@@ -270,7 +292,8 @@ function readForm(){
 
 document.addEventListener("input", e => { if (e.target.id === "q"){ search = e.target.value; render(); } });
 document.addEventListener("click", async e => {
-  if (e.target.id === "lo"){ logout(); return; }
+  if (e.target.id === "alo"){ logout(); return; }
+  if (e.target.id === "alang"){ setLang(getLang() === "ar" ? "en" : "ar"); applyDir(); loginView(root); return; }
   if (e.target.closest("[data-stop]")) return;
   const b = e.target.closest("[data-act]"); if (!b) return;
   const act = b.dataset.act;

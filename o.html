@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#7A2E3A">
 <title>طلبك</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="دورك">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;700;800&display=swap">
@@ -70,6 +76,16 @@ textarea{width:100%;font:inherit;border:1px solid var(--line);border-radius:14px
 .center{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;text-align:center}
 .panel{background:var(--card);border-radius:24px;padding:24px 20px;display:flex;flex-direction:column;gap:14px;text-align:center}
 .panel h2{font-size:20px;margin:0}
+.ios{background:var(--card);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.ios b{font-size:15.5px}
+.ios ol{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.ios .share{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;background:#E8EEF8;color:#1F6FEB;vertical-align:middle;font-weight:700}
+.ios small{color:var(--muted);font-size:13px}
+.scanov{position:fixed;inset:0;background:#000;z-index:30;display:flex;flex-direction:column}
+.scanov video{flex:1;width:100%;object-fit:cover;min-height:0}
+.scanov .frame{position:absolute;top:50%;left:50%;width:min(64vw,280px);aspect-ratio:1;transform:translate(-50%,-60%);border:3px solid #fff;border-radius:24px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
+.scanov .bar2{position:relative;padding:18px 20px calc(18px + env(safe-area-inset-bottom));background:#000;color:#fff;display:flex;flex-direction:column;gap:12px;text-align:center}
+.scanov .btn{background:#fff;color:#111}
 .foot{text-align:center;color:var(--muted);font-size:12px;padding:6px 0 calc(12px + env(safe-area-inset-bottom))}
 .spin{width:36px;height:36px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:sp 1s linear infinite;margin:auto}
 @keyframes sp{to{transform:rotate(1turn)}}
@@ -101,6 +117,11 @@ const TX = {
     iosWarn:"على الآيفون: أبقِ هذه الصفحة مفتوحة والشاشة شغالة حتى تسمع النداء.",
     deniedHint:"لتفعيل الإشعارات: اضغط على القفل بجانب عنوان الصفحة ← الإشعارات ← سماح، ثم اضغط الزر.", retry:"فعّل الإشعارات",
     walk:"تقدر تقعد وين ما بدك، رح نناديك.",
+    iosT:"على الآيفون: ليرن جوالك حتى وهو مقفل", iosS1:"اضغط زر المشاركة {i} في أسفل الشاشة", iosS2:"اختر «إضافة إلى الشاشة الرئيسية»", iosS3:"افتح «دورك» من الشاشة الرئيسية واضغط «فعّل التنبيه»",
+    iosOnce:"مرة واحدة فقط. في طلباتك القادمة افتح «دورك» واضغط «امسح طلباً جديداً».", iosOr:"أو أبقِ هذه الصفحة مفتوحة ولا تقفل الجوال.",
+    scanNew:"امسح طلباً جديداً", scanHint:"وجّه الكاميرا إلى رمز الطلب عند الكاشير", close:"إغلاق",
+    camErr:"لم نتمكن من فتح الكاميرا. اسمح باستخدام الكاميرا من إعدادات الجوال.", badCode:"هذا ليس رمز طلب.",
+    homeT:"أهلاً بك", homeD:"عند طلبك القادم، امسح رمز الطلب من هنا ليرن جوالك عندما يجهز.",
     ready:"طلبك جاهز!", headTo:"توجّه إلى {c}", onWay:"أنا جاي", showStaff:"اعرض هذا الرقم للموظف",
     tapSound:"اضغط لتسمع النداء",
     rateT:"كيف كانت زيارتك؟", thanks:"شكراً لزيارتك", fbT:"قل للمدير شو صار (رسالة خاصة، لا تُنشر)", send:"أرسل", fbSent:"✓ وصلت رسالتك للمدير. شكراً لك.",
@@ -118,6 +139,11 @@ const TX = {
     iosWarn:"On iPhone: keep this page open and the screen on to hear the call.",
     deniedHint:"To turn on notifications: tap the lock next to the page address → Notifications → Allow, then tap the button.", retry:"Turn on notifications",
     walk:"Sit anywhere you like. We'll call you.",
+    iosT:"On iPhone: get called even with the phone locked", iosS1:"Tap the Share button {i} at the bottom of the screen", iosS2:"Choose \"Add to Home Screen\"", iosS3:"Open \"Dorak\" from your Home Screen and tap Turn on alerts",
+    iosOnce:"Only once. For your next orders, open Dorak and tap Scan a new order.", iosOr:"Or keep this page open and don't lock your phone.",
+    scanNew:"Scan a new order", scanHint:"Point the camera at the order code at the till", close:"Close",
+    camErr:"Couldn't open the camera. Allow camera access in your phone's settings.", badCode:"That's not an order code.",
+    homeT:"Welcome", homeD:"At your next order, scan the order code here and your phone rings when it's ready.",
     ready:"Your order is ready!", headTo:"Head to {c}", onWay:"On my way", showStaff:"Show this number to the staff",
     tapSound:"Tap to hear the call",
     rateT:"How was your visit?", thanks:"Thanks for coming", fbT:"Tell the manager what went wrong (private, not posted)", send:"Send", fbSent:"✓ The manager got your message. Thank you.",
@@ -141,7 +167,12 @@ const mine = () => { try { return localStorage.getItem(LINK_KEY) === "1"; } catc
 const setMine = () => { try { localStorage.setItem(LINK_KEY, "1"); } catch(e){} };
 
 /* ---------- phone notifications (Firebase Cloud Messaging) ---------- */
-const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) && !window.MSStream;
+const isIOS = (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) && !window.MSStream;
+// Opened from the Home Screen icon. On iPhone, notifications only work here (Apple's rule).
+const isStandalone = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches;
+const iosNeedsInstall = isIOS && !isStandalone;
+const iosCard = () => `<div class="ios"><b>${t("iosT")}</b><ol><li>${t("iosS1", { i: '<span class="share">⬆︎</span>' })}</li><li>${t("iosS2")}</li><li>${t("iosS3")}</li></ol><small>${t("iosOnce")}</small><small>${t("iosOr")}</small></div>`;
+const scanBtn = () => isStandalone ? `<button class="btn" data-act="scan">📷 ${t("scanNew")}</button>` : "";
 let swReg = null;
 async function pushToken(){
   try {
@@ -193,13 +224,23 @@ function msgView(title, sub){ return head("") + `<div class="body"><div class="c
 function render(){
   document.documentElement.lang = lang; document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   if (venue?.color){ document.documentElement.style.setProperty("--brand", venue.color); document.querySelector('meta[name="theme-color"]').content = venue.color; }
-  if (!vId || !tId || missing){ $app.innerHTML = msgView(t("notFound"), t("notFoundD")); return; }
+  if ((!vId || !tId) && isStandalone){ $app.innerHTML = `<div class="body" style="padding-top:calc(40px + env(safe-area-inset-top))"><div class="center"><div class="panel"><h2>${t("homeT")}</h2><div class="cap">${t("homeD")}</div>${scanBtn()}</div></div></div>`; return; }
+  if (!vId || !tId || missing){ $app.innerHTML = msgView(t("notFound"), t("notFoundD")) + (isStandalone ? `<div class="body" style="flex:0">${scanBtn()}</div>` : ""); return; }
   if (!venue || !ticket){ $app.innerHTML = `<div class="center"><div class="spin"></div></div>`; return; }
   const tk = ticket, st = tk.status;
-  if (st === "cancelled"){ stopRing(); $app.innerHTML = msgView(t("cancelled"), ""); return; }
+  if (st === "cancelled"){ stopRing(); $app.innerHTML = msgView(t("cancelled"), "") + (isStandalone ? `<div class="body" style="flex:0">${scanBtn()}</div>` : ""); return; }
 
   // someone else already linked this number
-  if (st !== "new" && !mine() && !tk.collectedAt){ $app.innerHTML = msgView(t("taken"), t("takenD")); return; }
+  // Exception: the same person just added the page to the iPhone Home Screen and opened it from there
+  // (the Home Screen app has its own storage), so let them switch alerts to this app.
+  if (st !== "new" && !mine() && !tk.collectedAt){
+    if (isStandalone && ["waiting","ready"].includes(st)){
+      $app.innerHTML = head(t("orderNo") + " " + tk.no) + `<div class="body"><div class="stub"><div class="cap">${t("orderNo")}</div><div class="num">${esc(tk.no)}</div><div class="tear">${t("oneTap")}</div></div>
+        <button class="btn" data-act="claim" ${busy ? "disabled" : ""}>🔔 ${t("turnOn")}</button><div class="cap">${t("turnOnHint")}</div></div>${foot()}`;
+      return;
+    }
+    $app.innerHTML = msgView(t("taken"), t("takenD")); return;
+  }
 
   if (st === "new"){
     $app.innerHTML = head(t("orderNo") + " " + tk.no) + `<div class="body">
@@ -207,7 +248,8 @@ function render(){
         <div class="tear">${t("oneTap")}</div></div>
       <div class="center" style="flex:0;gap:10px;margin-top:6px">
         <button class="btn" data-act="link" ${busy?"disabled":""}>🔔 ${t("turnOn")}</button>
-        <div class="cap">${t("turnOnHint")}</div></div></div>${foot()}`;
+        <div class="cap">${t("turnOnHint")}</div></div>
+      ${iosNeedsInstall ? iosCard() : ""}</div>${foot()}`;
     return;
   }
 
@@ -215,7 +257,7 @@ function render(){
     const since = ms(tk.linkedAt) || Date.now();
     let chNote = "";
     if (tk.channel === "push") chNote = `<div class="note ok">${t("pushOk")}</div>`;
-    else if (isIOS) chNote = `<div class="note warn">${t("iosWarn")}</div>`;
+    else if (iosNeedsInstall) chNote = `<div class="note warn">${t("iosWarn")}</div>` + iosCard();
     else chNote = `<div class="note warn">${t("pageWarn")}</div>`
       + (("Notification" in window) && Notification.permission === "denied" ? `<div class="cap">${t("deniedHint")}</div>` : "")
       + `<button class="btn alt" data-act="retry">🔔 ${t("retry")}</button>`;
@@ -253,9 +295,59 @@ function render(){
           `<div><b style="font-size:14px">${t("fbT")}</b><textarea id="fb" maxlength="500">${esc(fb)}</textarea></div><button class="btn" data-act="fb">${t("send")}</button>`) : ""}
         ${venue.reviewUrl ? `<a class="gbtn" href="${esc(venue.reviewUrl)}" target="_blank" rel="noopener"><i>G</i>${t("google")}</a>` : ""}</div>`;
     }
-    $app.innerHTML = head(t("thanks")) + `<div class="body">${inner}</div>${foot()}`;
+    $app.innerHTML = head(t("thanks")) + `<div class="body">${inner}${scanBtn()}</div>${foot()}`;
     return;
   }
+}
+
+/* ---------- linking ---------- */
+async function linkPhone(){
+  setMine(); busy = true; render();
+  const token = await pushToken();
+  const upd = { status:"waiting", linkedAt: serverTimestamp(), channel: token ? "push" : "page" };
+  if (token) upd.pushToken = token;
+  try { await updateDoc(tRef(), upd); } catch(e){ if (ticket?.status === "new") { busy = false; throw e; } }
+  busy = false; render();
+}
+
+/* ---------- in-app scanner (Home Screen app) ---------- */
+let scanStream = null, scanRaf = 0;
+function loadJsQR(){
+  if (window.jsQR) return Promise.resolve();
+  return new Promise((ok, bad) => { const sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"; sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc); });
+}
+async function openScanner(){
+  const ov = document.createElement("div"); ov.className = "scanov"; ov.id = "scanov";
+  ov.innerHTML = `<video id="scanv" playsinline muted autoplay></video><div class="frame"></div><div class="bar2"><span id="scanmsg">${t("scanHint")}</span><button class="btn" data-act="closeScan">${t("close")}</button></div>`;
+  document.body.appendChild(ov);
+  try {
+    await loadJsQR();
+    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+    const v = document.getElementById("scanv"); v.srcObject = scanStream; await v.play();
+    const c = document.createElement("canvas"), cx = c.getContext("2d", { willReadFrequently: true });
+    const tick = () => {
+      if (!scanStream) return;
+      if (v.readyState >= 2){
+        const w = 480, h = Math.round(480 * v.videoHeight / v.videoWidth) || 480; c.width = w; c.height = h;
+        cx.drawImage(v, 0, 0, w, h);
+        const code = window.jsQR(cx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: "dontInvert" });
+        if (code && code.data){
+          try {
+            const u = new URL(code.data);
+            if (u.origin === location.origin && u.searchParams.get("t")){ closeScanner(); location.href = "o.html?v=" + encodeURIComponent(u.searchParams.get("v")) + "&t=" + encodeURIComponent(u.searchParams.get("t")); return; }
+          } catch(e){}
+          document.getElementById("scanmsg").textContent = t("badCode");
+        }
+      }
+      scanRaf = requestAnimationFrame(tick);
+    };
+    tick();
+  } catch(e){ console.warn(e); const m = document.getElementById("scanmsg"); if (m) m.textContent = t("camErr"); }
+}
+function closeScanner(){
+  cancelAnimationFrame(scanRaf);
+  if (scanStream){ scanStream.getTracks().forEach(tr => tr.stop()); scanStream = null; }
+  document.getElementById("scanov")?.remove();
 }
 
 /* ---------- actions ---------- */
@@ -265,14 +357,15 @@ document.addEventListener("click", async e => {
   const a = b.dataset.act;
   try {
     if (a === "lang"){ lang = lang === "ar" ? "en" : "ar"; try { localStorage.setItem("pg-lang", lang); } catch(_){} render(); }
-    if (a === "link"){
-      unlockAudio(); keepAwake(); setMine(); busy = true; render();
+    if (a === "link"){ unlockAudio(); keepAwake(); await linkPhone(); }
+    if (a === "scan") openScanner();
+    if (a === "claim"){
+      unlockAudio(); keepAwake(); busy = true; render();
       const token = await pushToken();
-      const upd = { status:"waiting", linkedAt: serverTimestamp(), channel: token ? "push" : "page" };
-      if (token) upd.pushToken = token;
-      await updateDoc(tRef(), upd);
-      busy = false; render();
+      setMine(); busy = false;
+      if (token) await updateDoc(tRef(), { channel: "push", pushToken: token }); else render();
     }
+    if (a === "closeScan") closeScanner();
     if (a === "retry"){
       unlockAudio(); keepAwake();
       const token = await pushToken();
@@ -308,6 +401,9 @@ async function start(){
     lastCalls = calls;
     if (ticket.status === "ready" && !prev && ticket.seenAt) acked = true;
     render();
+    if (!prev && ticket.status === "new" && !busy && ("Notification" in window) && Notification.permission === "granted"){
+      linkPhone().catch(e => console.warn(e));
+    }
   }, err => { console.error(err); alertBox(t("offline")); });
 }
 setInterval(() => document.querySelectorAll("[data-since]").forEach(el => el.textContent = mmss(Date.now() - +el.dataset.since)), 1000);
