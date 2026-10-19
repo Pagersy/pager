@@ -26,7 +26,21 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f);font
 button{font:inherit;cursor:pointer}
 :focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 55%,transparent);outline-offset:2px}
 .app{min-height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative}
-.app::before{content:"";position:absolute;inset:0 0 auto;height:230px;background:var(--brand);border-radius:0 0 36px 36px;z-index:-1}
+.app::before{content:"";position:absolute;inset:0 0 auto;height:230px;background:var(--band, var(--brand));background-size:cover;background-position:center;border-radius:0 0 36px 36px;z-index:-1}
+.logo img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
+.logo.img{padding:0;overflow:hidden;background:#fff}
+.welcome{text-align:center;font-size:15px;font-weight:500;color:var(--ink);margin:2px 8px 0}
+.offers{display:flex;flex-direction:column;gap:10px}
+.offers h3{margin:4px 2px 0;font-size:15px}
+.offer{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:center;background:var(--card);border-radius:18px;padding:10px;overflow:hidden}
+.offer.noimg{grid-template-columns:1fr}
+.offer img{width:92px;height:92px;object-fit:cover;border-radius:12px;display:block}
+.offer b{display:block;font-size:15px;line-height:1.3}
+.offer p{margin:3px 0 6px;font-size:13.5px;color:var(--muted);line-height:1.45}
+.offer .price{display:inline-block;background:var(--brand);color:#fff;font-weight:700;font-size:13px;border-radius:99px;padding:2px 10px}
+.links{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.links a{display:inline-flex;align-items:center;gap:6px;background:var(--card);border-radius:99px;padding:8px 14px;font-size:14px;font-weight:500;color:var(--ink);text-decoration:none}
+.thanksmsg{text-align:center;font-size:15px;margin:0}
 .head{color:#fff;padding:calc(18px + env(safe-area-inset-top)) 20px 8px;display:flex;align-items:center;gap:12px}
 .logo{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.95);color:var(--brand);display:grid;place-items:center;font-weight:800;font-size:20px;flex:none}
 .vn{font-weight:700;font-size:17px;line-height:1.25}
@@ -105,6 +119,7 @@ const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
 const qs = new URLSearchParams(location.search);
 const vId = qs.get("v"), tId = qs.get("t");
+const PREVIEW = qs.get("preview") === "1";
 const LINK_KEY = "pg-link:" + tId;
 
 const TX = {
@@ -121,6 +136,7 @@ const TX = {
     iosOnce:"مرة واحدة فقط. في طلباتك القادمة افتح «دورك» واضغط «امسح طلباً جديداً».", iosOr:"أو أبقِ هذه الصفحة مفتوحة ولا تقفل الجوال.",
     scanNew:"امسح طلباً جديداً", scanHint:"وجّه الكاميرا إلى رمز الطلب عند الكاشير", close:"إغلاق",
     camErr:"لم نتمكن من فتح الكاميرا. اسمح باستخدام الكاميرا من إعدادات الجوال.", badCode:"هذا ليس رمز طلب.",
+    offersT:"أثناء الانتظار", instagram:"إنستغرام", whatsapp:"واتساب", menu:"القائمة", map:"الموقع",
     homeT:"أهلاً بك", homeD:"عند طلبك القادم، امسح رمز الطلب من هنا ليرن جوالك عندما يجهز.",
     ready:"طلبك جاهز!", headTo:"توجّه إلى {c}", onWay:"أنا جاي", showStaff:"اعرض هذا الرقم للموظف",
     tapSound:"اضغط لتسمع النداء",
@@ -143,6 +159,7 @@ const TX = {
     iosOnce:"Only once. For your next orders, open Dorak and tap Scan a new order.", iosOr:"Or keep this page open and don't lock your phone.",
     scanNew:"Scan a new order", scanHint:"Point the camera at the order code at the till", close:"Close",
     camErr:"Couldn't open the camera. Allow camera access in your phone's settings.", badCode:"That's not an order code.",
+    offersT:"While you wait", instagram:"Instagram", whatsapp:"WhatsApp", menu:"Menu", map:"Location",
     homeT:"Welcome", homeD:"At your next order, scan the order code here and your phone rings when it's ready.",
     ready:"Your order is ready!", headTo:"Head to {c}", onWay:"On my way", showStaff:"Show this number to the staff",
     tapSound:"Tap to hear the call",
@@ -213,7 +230,37 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 /* ---------- views ---------- */
 const vname = () => (lang === "en" && venue?.nameEn) ? venue.nameEn : (venue?.name || "");
 const counter = () => (lang === "en" && venue?.counterEn) ? venue.counterEn : (venue?.counter || t("counterDef"));
+/* ---------- the restaurant's own design (logo, cover, offers, links) ---------- */
+let design = null;   // shown only when the branch is allowed custom pages
+const safeUrl = u => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : ""; } catch(e){ return ""; } };
+const safeImg = d => typeof d === "string" && /^data:image\/(jpeg|png|webp);base64,/.test(d) ? d : "";
+function applyDesign(){
+  const r = document.documentElement.style, brand = design?.brand || venue?.color;
+  if (brand && /^#[0-9a-f]{6}$/i.test(brand)){ r.setProperty("--brand", brand); document.querySelector('meta[name="theme-color"]').content = brand; }
+  r.setProperty("--paper", design?.bg && /^#[0-9a-f]{6}$/i.test(design.bg) ? design.bg : "#F2F4F7");
+  const cover = safeImg(design?.cover);
+  if (cover) r.setProperty("--band", `linear-gradient(rgba(10,14,24,.35),rgba(10,14,24,.55)), url("${cover}")`); else r.removeProperty("--band");
+}
+function extras(where){
+  if (!design) return "";
+  let h = "";
+  if (design.welcome && where !== "collected") h += `<p class="welcome">${esc(design.welcome)}</p>`;
+  const offers = (design.offers || []).filter(o => o && (o.title || o.text)).slice(0, 3);
+  if (offers.length && where !== "collected") h += `<section class="offers"><h3>${t("offersT")}</h3>${offers.map(o => { const img = safeImg(o.image);
+    return `<article class="offer ${img ? "" : "noimg"}">${img ? `<img src="${img}" alt="">` : ""}<div><b>${esc(o.title)}</b>${o.text ? `<p>${esc(o.text)}</p>` : ""}${o.price ? `<span class="price">${esc(o.price)}</span>` : ""}</div></article>`; }).join("")}</section>`;
+  const L = design.links || {}, links = [];
+  if (L.instagram){ const u = /^https?:/.test(L.instagram) ? safeUrl(L.instagram) : "https://instagram.com/" + encodeURIComponent(L.instagram.replace(/^@/, "")); if (u) links.push(`<a href="${u}" target="_blank" rel="noopener">◎ ${t("instagram")}</a>`); }
+  if (L.whatsapp){ const n = String(L.whatsapp).replace(/[^0-9]/g, ""); if (n.length >= 8) links.push(`<a href="https://wa.me/${n}" target="_blank" rel="noopener">✆ ${t("whatsapp")}</a>`); }
+  if (L.menu){ const u = safeUrl(L.menu); if (u) links.push(`<a href="${u}" target="_blank" rel="noopener">☰ ${t("menu")}</a>`); }
+  if (L.map){ const u = safeUrl(L.map); if (u) links.push(`<a href="${u}" target="_blank" rel="noopener">⌖ ${t("map")}</a>`); }
+  if (links.length) h += `<div class="links">${links.join("")}</div>`;
+  return h;
+}
 function head(sub){
+  const logo = safeImg(design?.logo);
+  if (logo) return `<header class="head"><div class="logo img"><img src="${logo}" alt=""></div>
+    <div><div class="vn">${esc(vname())}${venue?.branch ? ` <span style="font-weight:500;opacity:.8">· ${esc(venue.branch)}</span>` : ""}</div><div class="vs">${esc(sub || "")}</div></div>
+    <button class="lang" data-act="lang">${lang === "ar" ? "English" : "عربي"}</button></header>`;
   return `<header class="head"><div class="logo">${esc(venue?.initial || vname().slice(0,1))}</div>
     <div><div class="vn">${esc(vname())}${venue?.branch ? ` <span style="font-weight:500;opacity:.8">· ${esc(venue.branch)}</span>` : ""}</div><div class="vs">${esc(sub || "")}</div></div>
     <button class="lang" data-act="lang">${lang === "ar" ? "English" : "عربي"}</button></header>`;
@@ -223,9 +270,9 @@ function msgView(title, sub){ return head("") + `<div class="body"><div class="c
 
 function render(){
   document.documentElement.lang = lang; document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-  if (venue?.color){ document.documentElement.style.setProperty("--brand", venue.color); document.querySelector('meta[name="theme-color"]').content = venue.color; }
-  if ((!vId || !tId) && isStandalone){ $app.innerHTML = `<div class="body" style="padding-top:calc(40px + env(safe-area-inset-top))"><div class="center"><div class="panel"><h2>${t("homeT")}</h2><div class="cap">${t("homeD")}</div>${scanBtn()}</div></div></div>`; return; }
-  if (!vId || !tId || missing){ $app.innerHTML = msgView(t("notFound"), t("notFoundD")) + (isStandalone ? `<div class="body" style="flex:0">${scanBtn()}</div>` : ""); return; }
+  if (venue) applyDesign();
+  if ((!vId || !tId) && isStandalone && !PREVIEW){ $app.innerHTML = `<div class="body" style="padding-top:calc(40px + env(safe-area-inset-top))"><div class="center"><div class="panel"><h2>${t("homeT")}</h2><div class="cap">${t("homeD")}</div>${scanBtn()}</div></div></div>`; return; }
+  if (((!vId || !tId) && !PREVIEW) || missing){ $app.innerHTML = msgView(t("notFound"), t("notFoundD")) + (isStandalone ? `<div class="body" style="flex:0">${scanBtn()}</div>` : ""); return; }
   if (!venue || !ticket){ $app.innerHTML = `<div class="center"><div class="spin"></div></div>`; return; }
   const tk = ticket, st = tk.status;
   if (st === "cancelled"){ stopRing(); $app.innerHTML = msgView(t("cancelled"), "") + (isStandalone ? `<div class="body" style="flex:0">${scanBtn()}</div>` : ""); return; }
@@ -249,7 +296,7 @@ function render(){
       <div class="center" style="flex:0;gap:10px;margin-top:6px">
         <button class="btn" data-act="link" ${busy?"disabled":""}>🔔 ${t("turnOn")}</button>
         <div class="cap">${t("turnOnHint")}</div></div>
-      ${iosNeedsInstall ? iosCard() : ""}</div>${foot()}`;
+      ${iosNeedsInstall ? iosCard() : ""}${extras("new")}</div>${foot()}`;
     return;
   }
 
@@ -264,7 +311,7 @@ function render(){
     $app.innerHTML = head(t("orderNo") + " " + tk.no) + `<div class="body">
       <div class="stub"><div class="cap">${t("orderNo")}</div><div class="num">${esc(tk.no)}</div>
         <div class="tear"><span class="dot"></span><b>${t("preparing")}</b> · ${t("waited")} <span class="timer"><span data-since="${since}">0:00</span></span></div></div>
-      ${chNote}<div class="note">${t("walk")}</div></div>${foot()}`;
+      ${chNote}<div class="note">${t("walk")}</div>${extras("waiting")}</div>${foot()}`;
     return;
   }
 
@@ -295,7 +342,7 @@ function render(){
           `<div><b style="font-size:14px">${t("fbT")}</b><textarea id="fb" maxlength="500">${esc(fb)}</textarea></div><button class="btn" data-act="fb">${t("send")}</button>`) : ""}
         ${venue.reviewUrl ? `<a class="gbtn" href="${esc(venue.reviewUrl)}" target="_blank" rel="noopener"><i>G</i>${t("google")}</a>` : ""}</div>`;
     }
-    $app.innerHTML = head(t("thanks")) + `<div class="body">${inner}${scanBtn()}</div>${foot()}`;
+    $app.innerHTML = head(t("thanks")) + `<div class="body">${design?.thanks ? `<p class="thanksmsg">${esc(design.thanks)}</p>` : ""}${inner}${extras("collected")}${scanBtn()}</div>${foot()}`;
     return;
   }
 }
@@ -391,6 +438,11 @@ async function start(){
     if (!vs.exists()){ missing = true; render(); return; }
     venue = vs.data(); document.title = venue.name || document.title;
   } catch(e){ missing = true; render(); return; }
+  try {
+    const [g, d] = await Promise.all([getDoc(doc(db, "settings", "global")).catch(() => null), getDoc(doc(db, "venues", vId, "public", "design")).catch(() => null)]);
+    const allowed = venue.designAllowed === true || (g && g.exists() && g.data().designForAll === true);
+    if (allowed && d && d.exists()) design = d.data();
+  } catch(e){}
   onSnapshot(tRef(), snap => {
     if (!snap.exists()){ missing = true; render(); return; }
     const prev = ticket; ticket = snap.data();
@@ -407,7 +459,19 @@ async function start(){
   }, err => { console.error(err); alertBox(t("offline")); });
 }
 setInterval(() => document.querySelectorAll("[data-since]").forEach(el => el.textContent = mmss(Date.now() - +el.dataset.since)), 1000);
-render(); start();
+if (PREVIEW){
+  // Live preview inside the owner's page designer: data comes from the dashboard, nothing is saved.
+  window.addEventListener("message", e => {
+    if (e.origin !== location.origin || !e.data || e.data.type !== "pg-preview") return;
+    venue = e.data.venue; design = e.data.design;
+    const st = e.data.state || "waiting";
+    ticket = { no: "47", status: st, channel: "push", linkedAt: { toMillis: () => Date.now() - 95000 }, rating: st === "collected" ? 5 : 0 };
+    try { localStorage.setItem(LINK_KEY, "1"); } catch(_){}
+    render();
+  });
+  document.addEventListener("click", e => { if (e.target.closest("a,button")) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+  parent.postMessage({ type: "pg-preview-ready" }, location.origin);
+} else { render(); start(); }
 </script>
 </body>
 </html>

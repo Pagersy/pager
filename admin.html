@@ -90,7 +90,7 @@ import { PRODUCT_NAME, firebaseConfig } from "./config.js";
 import { esc, ms, dayKey, getLang, setLang, makeT, applyDir, accountState, showFatal } from "./shared.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, query, where, onSnapshot, updateDoc, addDoc, serverTimestamp, Timestamp }
+import { getFirestore, collection, doc, getDoc, getDocs, query, where, onSnapshot, updateDoc, addDoc, setDoc, writeBatch, serverTimestamp, Timestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // The admin panel keeps its own sign-in, separate from the staff and owner screens in the same browser.
@@ -132,6 +132,8 @@ const TX = {
     suspOn:"الحساب موقوف.", suspOff:"تمت إعادة التشغيل.",
     adminNote:"ملاحظات داخلية", saveNote:"حفظ الملاحظة", noteSaved:"تم الحفظ.",
     branches:"الفروع", ordersToday:"{n} طلب اليوم", staffN:"{n} حساب موظف",
+    design:"تصميم صفحة الانتظار", designD:"شعار وغلاف وعروض على صفحة الزبون (الخطة المميزة).", designOn:"مفعّل", designOff:"غير مفعّل", turnOn:"تفعيل", turnOff:"إيقاف", designSaved:"تم التحديث.",
+    allT:"تصميم صفحة الانتظار لكل الخطط", allOn:"متاح لكل الحسابات الآن", allOff:"متاح فقط للحسابات التي تفعّلها", allBtnOn:"إتاحته للجميع", allBtnOff:"إيقافه للجميع", sureAll:"اضغط مرة ثانية للتأكيد", branded:"مميز",
     history:"سجل الدفعات", noHistory:"لا توجد دفعات بعد.", close:"إغلاق", err:"تعذّر الحفظ. تأكد من الاتصال والصلاحيات."
   },
   en: {
@@ -151,12 +153,15 @@ const TX = {
     suspOn:"Account paused.", suspOff:"Account switched back on.",
     adminNote:"Internal notes", saveNote:"Save note", noteSaved:"Saved.",
     branches:"Branches", ordersToday:"{n} orders today", staffN:"{n} staff logins",
+    design:"Waiting page design", designD:"Logo, cover and offers on the customer page (branded plan).", designOn:"On", designOff:"Off", turnOn:"Switch on", turnOff:"Switch off", designSaved:"Updated.",
+    allT:"Waiting page design for every plan", allOn:"Available to every account now", allOff:"Only for accounts you switch on", allBtnOn:"Give it to everyone", allBtnOff:"Stop giving it to everyone", sureAll:"Tap again to confirm", branded:"Branded",
     history:"Payment history", noHistory:"No payments yet.", close:"Close", err:"Couldn't save. Check the connection and permissions."
   }
 };
 const t = makeT(TX);
 const root = document.getElementById("root");
 const DAY = 86400000;
+let globalSet = {}, confirmAll = false;
 let accounts = [], payments = [], filter = "all", search = "", openId = null, detail = {}, form = { months: 1, currency: "USD", method: "cash" }, msg = {}, confirmSusp = false;
 window.addEventListener("unhandledrejection", e => showFatal(root, e.reason));
 
@@ -169,6 +174,7 @@ onAuthStateChanged(auth, async user => {
   } catch(e){ showFatal(root, e); return; }
   onSnapshot(collection(db, "accounts"), s => { accounts = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, e => showFatal(root, e));
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  onSnapshot(doc(db, "settings", "global"), s => { globalSet = s.exists() ? s.data() : {}; render(); }, () => {});
   onSnapshot(collection(db, "payments"), s => { payments = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, e => showFatal(root, e));
   render();
 });
@@ -216,10 +222,13 @@ function render(){
       ${tile("suspended", t("tSusp"), count(a => a.st === "suspended"))}
       <div class="tile money"><span>${t("tMonth")}</span><b>${monthTxt}</b></div>
     </div>
+    <div class="box" style="margin-top:14px;flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px">
+      <div style="flex:1;min-width:220px"><b style="font-size:14.5px">${t("allT")}</b><div style="font-size:13px;color:var(--muted)">${globalSet.designForAll ? t("allOn") : t("allOff")}</div></div>
+      <button class="btn ${globalSet.designForAll ? "" : "primary"}" data-act="designall">${confirmAll ? t("sureAll") : (globalSet.designForAll ? t("allBtnOff") : t("allBtnOn"))}</button></div>
     <div class="tools"><input id="q" type="search" placeholder="${t("search")}" value="${esc(search)}"><small>${t("shown", { n: rows.length })}</small></div>
     <div class="tablewrap"><table><thead><tr><th>${t("cName")}</th><th>${t("cWa")}</th><th>${t("cBr")}</th><th>${t("cStatus")}</th><th>${t("cEnds")}</th><th>${t("cLast")}</th><th>${t("cCreated")}</th></tr></thead>
       <tbody>${rows.length ? rows.map(a => { const lp = lastPay(a.id), d = a.end ? Math.round((a.end - Date.now()) / DAY) : null;
-        return `<tr data-act="open" data-id="${a.id}"><td><div class="nm">${esc(a.name)}</div><div class="sub">${esc(a.ownerEmail || "")}</div></td>
+        return `<tr data-act="open" data-id="${a.id}"><td><div class="nm">${esc(a.name)}${a.pageDesign ? ` <span class="pill paid" style="font-size:11px">★ ${t("branded")}</span>` : ""}</div><div class="sub">${esc(a.ownerEmail || "")}</div></td>
         <td>${a.phone ? `<a class="wa" href="${waLink(a.phone)}" target="_blank" rel="noopener" data-stop="1">${esc(a.phone)}</a>` : "—"}</td>
         <td class="num">${Object.keys(a.branches || {}).length} / ${a.maxBranches || 3}</td>
         <td><span class="pill ${a.st}">${stName(a.st)}</span></td>
@@ -264,6 +273,10 @@ function sheet(){
       <small style="color:var(--muted)">${t("staffN", { n: staffN })}</small>
       <div class="row"><div class="f" style="flex:0 1 140px"><label for="p-lim">${t("limit")}</label><input id="p-lim" type="number" min="1" max="100" value="${a.maxBranches || 3}"></div><button class="btn" data-act="limit" style="align-self:flex-end">${t("saveLimit")}</button></div>
       <p class="msg">${esc(msg.limit || "")}</p></section>
+
+    <section class="box"><h3>${t("design")}</h3><small style="color:var(--muted)">${t("designD")}</small>
+      <div class="row"><span class="pill ${a.pageDesign || globalSet.designForAll ? "paid" : "suspended"}">${a.pageDesign ? t("designOn") : globalSet.designForAll ? t("allOn") : t("designOff")}</span>
+      <button class="btn ${a.pageDesign ? "" : "primary"}" data-act="design">${a.pageDesign ? t("turnOff") : t("turnOn")}</button></div><p class="msg">${esc(msg.design || "")}</p></section>
 
     <section class="box"><h3>${t("adminNote")}</h3><div class="f"><textarea id="p-anote">${esc(a.adminNote || "")}</textarea></div><button class="btn" data-act="note">${t("saveNote")}</button><p class="msg">${esc(msg.note || "")}</p></section>
 
@@ -323,6 +336,15 @@ document.addEventListener("click", async e => {
       case "limit": { readForm(); const n = Math.max(1, Math.min(100, parseInt(document.getElementById("p-lim").value, 10) || 1)); await updateDoc(ref, { maxBranches: n }); msg.limit = t("limitSaved"); render(); break; }
       case "note": { readForm(); await updateDoc(ref, { adminNote: document.getElementById("p-anote").value.slice(0, 2000) }); msg.note = t("noteSaved"); render(); break; }
       case "suspend": readForm(); if (!confirmSusp){ confirmSusp = true; render(); break; } confirmSusp = false; await updateDoc(ref, { suspended: true }); msg.susp = t("suspOn"); render(); break;
+      case "design": {
+        const on = !a.pageDesign, batch = writeBatch(db);
+        batch.update(ref, { pageDesign: on });
+        for (const id of Object.keys(a.branches || {})) batch.update(doc(db, "venues", id), { designAllowed: on });
+        await batch.commit(); msg.design = t("designSaved"); render(); break;
+      }
+      case "designall":
+        if (!confirmAll){ confirmAll = true; render(); break; }
+        confirmAll = false; await setDoc(doc(db, "settings", "global"), { designForAll: !globalSet.designForAll }, { merge: true }); render(); break;
       case "resume": await updateDoc(ref, { suspended: false }); msg.susp = t("suspOff"); render(); break;
     }
   } catch(err){ console.error(err); msg[{ pay:"pay", ext:"ext", limit:"limit", note:"note", suspend:"susp", resume:"susp" }[act] || "pay"] = t("err"); render(); }

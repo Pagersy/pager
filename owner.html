@@ -63,10 +63,49 @@ h2.sec small{color:var(--muted);font-weight:400;font-size:13.5px}
 .brand label{display:block;font-size:13px;font-weight:500;margin-bottom:5px}
 .brand input{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 12px;background:var(--sunk)}
 .brand input[type=color]{height:46px;padding:4px}
+
+/* ---------- page designer ---------- */
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--sunk);border-radius:12px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:7px 13px;border-radius:9px;font-size:14px;color:var(--muted);font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+#designer .wrap{padding-top:0}
+.dz{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:900px){.dz{grid-template-columns:1fr}}
+.dform{display:flex;flex-direction:column;gap:14px}
+.dcard{background:var(--card);border-radius:var(--r-lg);padding:16px;display:flex;flex-direction:column;gap:12px}
+.dcard h3{margin:0;font-size:15px}
+.dcard small{color:var(--muted)}
+.drow{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.dfield{display:flex;flex-direction:column;gap:5px;flex:none;min-width:0}
+.drow > .dfield{flex:1 1 160px}
+.dfield label{font-size:12.5px;color:var(--muted)}
+.dfield input:not([type=color]),.dfield select,.dfield textarea{border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;background:var(--sunk);width:100%;font:inherit}
+.dfield input[type=color]{height:44px;width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:4px;background:var(--sunk)}
+.thumb{width:72px;height:72px;border-radius:14px;background:var(--sunk);display:grid;place-items:center;overflow:hidden;flex:none;color:var(--muted);font-size:12px;border:1px dashed var(--line)}
+.thumb.wide{width:144px}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.sw{display:flex;gap:8px;flex-wrap:wrap}
+.sw button{width:34px;height:34px;border-radius:50%;border:2px solid var(--card);box-shadow:0 0 0 1px var(--line)}
+.sw button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+.offerbox{border:1px solid var(--line);border-radius:var(--r);padding:12px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px}
+.offerbox .fields{display:flex;flex-direction:column;gap:8px}
+.preview{position:sticky;top:16px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.phone{width:300px;height:620px;border-radius:44px;background:#141C28;padding:10px;box-shadow:0 24px 50px -24px rgba(20,32,51,.5)}
+.phone iframe{width:100%;height:100%;border:0;border-radius:34px;background:#fff}
+.dbar{position:sticky;bottom:0;background:var(--paper);padding:12px 0;display:flex;flex-wrap:wrap;gap:10px;align-items:center;z-index:5}
+.dbar .msg{margin:0}
+.locked{background:var(--card);border-radius:var(--r-lg);padding:22px;display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.locked b{font-size:17px}
+.locked p{margin:4px 0 0;color:var(--muted)}
+.locked .btn{margin-inline-start:auto}
+.unsaved{color:#B45309;font-size:13px;font-weight:500}
 </style>
 </head>
 <body>
 <div id="root"></div>
+<div id="designer"></div>
 <script type="module">
 import { db, esc, ms, mmss, dayKey, requireStaff, logout, getLang, setLang, makeT, showFatal, callFn, accountState, whatsappLink, SUPPORT_NUMBER, param } from "./shared.js";
 import { collection, doc, query, where, onSnapshot, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -124,7 +163,8 @@ const fmtDate = m => new Date(m).toLocaleDateString(getLang() === "ar" ? "ar-SY"
 
 requireStaff(root, ctx => {
   accountId = ctx.accountId;
-  onSnapshot(doc(db, "accounts", accountId), s => { acc = s.data(); watchBranches(); render(); }, err => showFatal(root, err));
+  onSnapshot(doc(db, "accounts", accountId), s => { acc = s.data(); watchBranches(); render();
+    window.dispatchEvent(new CustomEvent("pg-acc", { detail: { accountId, acc } })); }, err => showFatal(root, err));
 }, { ownerOnly: true });
 
 function watchBranches(){
@@ -254,5 +294,187 @@ document.addEventListener("submit", async e => {
   }
 });
 </script>
+<script type="module">
+// Waiting-page designer: each branch designs its own customer page (logo, cover, colours, offers, links).
+import { db, esc, getLang, makeT, whatsappLink, SUPPORT_NUMBER } from "./shared.js";
+import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const TX = {
+  ar: {
+    title:"تصميم صفحة الانتظار", sub:"ما يراه الزبون بعد مسح الرمز. لكل فرع تصميمه وعروضه.",
+    lockedT:"صفحة انتظار بهوية مطعمك", lockedL:"ضع شعارك وصورة الغلاف وعروضاً يراها الزبون أثناء الانتظار. متاحة في الخطة المميزة.", lockedBtn:"اطلب التفعيل", lockedMsg:"مرحباً، أريد تفعيل تصميم صفحة الانتظار لحساب {r}.",
+    identity:"الهوية", logo:"الشعار", cover:"صورة الغلاف", choose:"اختر صورة", remove:"إزالة", none:"لا يوجد",
+    brand:"اللون الرئيسي", bg:"لون الخلفية", welcome:"جملة ترحيب", welcomePh:"مثال: أهلاً فيك، قهوتك عم تتحضر ☕",
+    offers:"عروض أثناء الانتظار", offersS:"حتى 3 عروض. تظهر تحت رقم الطلب.", offer:"عرض {n}", oTitle:"العنوان", oTitlePh:"مثال: كرواسون مع القهوة", oText:"وصف قصير", oPrice:"السعر", oPricePh:"مثال: 10,000 ل.س", addOffer:"+ أضف عرضاً",
+    links:"روابط", instagram:"إنستغرام (اسم الحساب أو الرابط)", whatsapp:"رقم واتساب", menu:"رابط القائمة", map:"رابط الموقع على الخريطة",
+    thanks:"رسالة بعد الاستلام", thanksPh:"مثال: شكراً لزيارتك! نراك قريباً",
+    publish:"نشر التصميم", published:"تم النشر. الزبائن يرون التصميم الجديد الآن.", unsaved:"تغييرات غير منشورة", copyFrom:"انسخ من فرع", copied:"تم النسخ. راجع واضغط «نشر التصميم».",
+    pWaiting:"الانتظار", pReady:"جاهز", pAfter:"بعد الاستلام", imgErr:"تعذّر قراءة الصورة. جرّب صورة JPG أو PNG.", saveErr:"تعذّر النشر. تأكد من الاتصال، وأن الصور ليست كبيرة جداً.", loading:"جارٍ التحميل…"
+  },
+  en: {
+    title:"Waiting page design", sub:"What customers see after scanning. Each branch has its own design and offers.",
+    lockedT:"A waiting page in your brand", lockedL:"Add your logo, a cover photo and offers customers see while they wait. Available on the branded plan.", lockedBtn:"Ask to switch it on", lockedMsg:"Hello, I'd like to switch on the waiting page design for {r}.",
+    identity:"Identity", logo:"Logo", cover:"Cover photo", choose:"Choose image", remove:"Remove", none:"None",
+    brand:"Main colour", bg:"Background", welcome:"Welcome line", welcomePh:"e.g. Welcome! Your coffee is being made ☕",
+    offers:"Offers while waiting", offersS:"Up to 3 offers, shown under the order number.", offer:"Offer {n}", oTitle:"Title", oTitlePh:"e.g. Croissant with your coffee", oText:"Short description", oPrice:"Price", oPricePh:"e.g. 10,000 SYP", addOffer:"+ Add an offer",
+    links:"Links", instagram:"Instagram (handle or link)", whatsapp:"WhatsApp number", menu:"Menu link", map:"Map location link",
+    thanks:"Message after pickup", thanksPh:"e.g. Thanks for visiting! See you soon",
+    publish:"Publish design", published:"Published. Customers see the new design now.", unsaved:"Unpublished changes", copyFrom:"Copy from branch", copied:"Copied. Check it and tap Publish design.",
+    pWaiting:"Waiting", pReady:"Ready", pAfter:"After pickup", imgErr:"Couldn't read that image. Try a JPG or PNG.", saveErr:"Couldn't publish. Check the connection and that the images aren't too large.", loading:"Loading…"
+  }
+};
+const t = makeT(TX);
+const box = document.getElementById("designer");
+const BGS = ["#F2F4F7", "#FFFFFF", "#FFF7EC", "#F1F7F2", "#F4F1FA", "#FDF1F1"];
+let accountId = null, acc = null, allowedAll = false, branch = null, venues = {}, drafts = {}, saved = {}, state = "waiting", msg = "", busy = false, frameReady = false;
+
+window.addEventListener("pg-acc", async e => {
+  const first = !acc; accountId = e.detail.accountId; acc = e.detail.acc;
+  if (first){ try { const g = await getDoc(doc(db, "settings", "global")); allowedAll = g.exists() && g.data().designForAll === true; } catch(_){} }
+  const ids = Object.keys(acc.branches || {});
+  if (!branch || !ids.includes(branch)) branch = ids.sort((a,b) => acc.branches[a].localeCompare(acc.branches[b]))[0] || null;
+  if (branch && !drafts[branch]) await loadBranch(branch);
+  render();
+});
+const allowed = () => allowedAll || acc?.pageDesign === true;
+
+async function loadBranch(id){
+  const [v, d] = await Promise.all([getDoc(doc(db, "venues", id)), getDoc(doc(db, "venues", id, "public", "design")).catch(() => null)]);
+  venues[id] = v.exists() ? v.data() : {};
+  const data = d && d.exists() ? d.data() : {};
+  delete data.updatedAt;
+  saved[id] = JSON.stringify(data);
+  drafts[id] = { offers: [], links: {}, ...JSON.parse(saved[id]) };
+}
+const dirty = () => branch && JSON.stringify(clean(drafts[branch])) !== JSON.stringify(clean(JSON.parse(saved[branch] || "{}")));
+function clean(d){
+  const o = { ...d }; o.offers = (o.offers || []).filter(x => x && (x.title || x.text || x.image)); o.links = Object.fromEntries(Object.entries(o.links || {}).filter(([, v]) => v));
+  for (const k of Object.keys(o)) if (o[k] === "" || o[k] == null || (Array.isArray(o[k]) && !o[k].length) || (k === "links" && !Object.keys(o[k]).length)) delete o[k];
+  return o;
+}
+
+// Shrinks photos in the browser so the customer page stays fast on slow connections.
+function shrink(file, maxW, maxH, maxBytes){
+  return new Promise((ok, bad) => {
+    const fr = new FileReader();
+    fr.onerror = bad;
+    fr.onload = () => { const img = new Image(); img.onerror = bad; img.onload = () => {
+      const k = Math.min(1, maxW / img.width, maxH / img.height), w = Math.round(img.width * k), h = Math.round(img.height * k);
+      const c = document.createElement("canvas"); c.width = w; c.height = h; const cx = c.getContext("2d");
+      cx.fillStyle = "#fff"; cx.fillRect(0, 0, w, h); cx.drawImage(img, 0, 0, w, h);
+      let q = 0.82, out = c.toDataURL("image/jpeg", q);
+      while (out.length > maxBytes && q > 0.35){ q -= 0.08; out = c.toDataURL("image/jpeg", q); }
+      out.length > maxBytes ? bad(new Error("too big")) : ok(out);
+    }; img.src = fr.result; };
+    fr.readAsDataURL(file);
+  });
+}
+
+function sendPreview(){
+  const f = document.getElementById("pframe"); if (!f || !frameReady || !branch) return;
+  f.contentWindow.postMessage({ type: "pg-preview", venue: { ...venues[branch], designAllowed: true }, design: clean(drafts[branch]), state }, location.origin);
+}
+window.addEventListener("message", e => { if (e.origin === location.origin && e.data?.type === "pg-preview-ready"){ frameReady = true; sendPreview(); } });
+
+function imgField(key, label, wide){
+  const v = drafts[branch][key];
+  return `<div class="drow" style="align-items:center"><div class="thumb ${wide ? "wide" : ""}">${v ? `<img src="${v}" alt="">` : t("none")}</div>
+    <div style="display:flex;flex-direction:column;gap:6px"><b style="font-size:14px">${label}</b><div class="drow"><span class="btn filebtn">${t("choose")}<input type="file" accept="image/*" data-img="${key}"></span>${v ? `<button class="btn quiet" data-dact="rmimg" data-k="${key}">${t("remove")}</button>` : ""}</div></div></div>`;
+}
+
+function render(){
+  if (!acc){ box.innerHTML = ""; return; }
+  const wa = whatsappLink(t("lockedMsg", { r: acc.name }));
+  if (!allowed()){
+    box.innerHTML = `<div class="wrap"><h2 class="sec">${t("title")}</h2><div class="locked"><div><b>${t("lockedT")}</b><p>${t("lockedL")}</p></div>
+      ${wa ? `<a class="btn primary" href="${wa}" target="_blank" rel="noopener">${t("lockedBtn")}</a>` : (SUPPORT_NUMBER ? `<span class="btn">${esc(SUPPORT_NUMBER)}</span>` : "")}</div></div>`;
+    return;
+  }
+  if (!branch || !drafts[branch]){ box.innerHTML = `<div class="wrap"><h2 class="sec">${t("title")}</h2><p class="muted">${t("loading")}</p></div>`; return; }
+  const d = drafts[branch], ids = Object.entries(acc.branches || {}).sort((a,b) => a[1].localeCompare(b[1]));
+  const others = ids.filter(([id]) => id !== branch);
+  const offers = d.offers || [];
+  box.innerHTML = `<div class="wrap">
+    <h2 class="sec">${t("title")} <small>${t("sub")}</small></h2>
+    ${ids.length > 1 ? `<div class="seg" role="tablist" style="margin-bottom:14px;background:var(--card)">${ids.map(([id, n]) => `<button data-dact="branch" data-v="${id}" aria-pressed="${id === branch}" style="padding:8px 14px">${esc(n)}</button>`).join("")}</div>` : ""}
+    <div class="dz">
+      <div class="dform">
+        <section class="dcard"><h3>${t("identity")}</h3>
+          ${imgField("logo", t("logo"))}${imgField("cover", t("cover"), true)}
+          <div class="drow"><div class="dfield" style="flex:0 1 140px"><label for="d-brand">${t("brand")}</label><input type="color" id="d-brand" value="${esc(d.brand || venues[branch].color || "#7A2E3A")}"></div>
+            <div class="dfield"><label>${t("bg")}</label><div class="sw">${BGS.map(c => `<button type="button" data-dact="bg" data-v="${c}" style="background:${c}" aria-label="${c}" aria-pressed="${(d.bg || "#F2F4F7") === c}"></button>`).join("")}</div></div></div>
+          <div class="dfield"><label for="d-welcome">${t("welcome")}</label><input id="d-welcome" maxlength="100" placeholder="${t("welcomePh")}" value="${esc(d.welcome || "")}"></div>
+        </section>
+        <section class="dcard"><h3>${t("offers")}</h3><small>${t("offersS")}</small>
+          ${offers.map((o, i) => `<div class="offerbox"><div style="display:flex;flex-direction:column;gap:6px;align-items:center"><div class="thumb">${o.image ? `<img src="${o.image}" alt="">` : t("none")}</div>
+              <span class="btn filebtn" style="padding:6px 10px;font-size:13px">${t("choose")}<input type="file" accept="image/*" data-oimg="${i}"></span></div>
+            <div class="fields"><div class="drow" style="justify-content:space-between"><b style="font-size:14px">${t("offer", { n: i + 1 })}</b><button class="btn quiet" data-dact="rmoffer" data-i="${i}">${t("remove")}</button></div>
+              <div class="dfield"><label>${t("oTitle")}</label><input data-of="title" data-i="${i}" maxlength="40" placeholder="${t("oTitlePh")}" value="${esc(o.title || "")}"></div>
+              <div class="dfield"><label>${t("oText")}</label><input data-of="text" data-i="${i}" maxlength="100" value="${esc(o.text || "")}"></div>
+              <div class="dfield"><label>${t("oPrice")}</label><input data-of="price" data-i="${i}" maxlength="20" placeholder="${t("oPricePh")}" value="${esc(o.price || "")}"></div></div></div>`).join("")}
+          ${offers.length < 3 ? `<button class="btn" data-dact="addoffer" style="align-self:flex-start">${t("addOffer")}</button>` : ""}
+        </section>
+        <section class="dcard"><h3>${t("links")}</h3>
+          <div class="drow">${[["instagram","text"],["whatsapp","tel"],["menu","url"],["map","url"]].map(([k, ty]) => `<div class="dfield"><label for="dl-${k}">${t(k)}</label><input id="dl-${k}" type="${ty}" dir="ltr" data-link="${k}" maxlength="200" value="${esc(d.links?.[k] || "")}"></div>`).join("")}</div>
+        </section>
+        <section class="dcard"><h3>${t("thanks")}</h3><div class="dfield"><input id="d-thanks" maxlength="140" placeholder="${t("thanksPh")}" value="${esc(d.thanks || "")}"></div></section>
+        <div class="dbar"><button class="btn primary" data-dact="publish" ${busy ? "disabled" : ""}>${t("publish")}</button>
+          ${others.length ? `<select class="btn" id="d-copy"><option value="">${t("copyFrom")}…</option>${others.map(([id, n]) => `<option value="${id}">${esc(n)}</option>`).join("")}</select>` : ""}
+          <span class="unsaved" id="d-dirty">${dirty() ? t("unsaved") : ""}</span><p class="msg ${msg === t("saveErr") || msg === t("imgErr") ? "bad" : "good"}" id="d-msg">${esc(msg)}</p></div>
+      </div>
+      <aside class="preview"><div class="seg">${[["waiting","pWaiting"],["ready","pReady"],["collected","pAfter"]].map(([k, l]) => `<button data-dact="state" data-v="${k}" aria-pressed="${state === k}">${t(l)}</button>`).join("")}</div>
+        <div class="phone"><iframe id="pframe" title="Preview" src="o.html?preview=1"></iframe></div></aside>
+    </div></div>`;
+  frameReady = false;
+}
+function changed(){ const el = document.getElementById("d-dirty"); if (el) el.textContent = dirty() ? t("unsaved") : ""; msg = ""; const m = document.getElementById("d-msg"); if (m) m.textContent = ""; clearTimeout(changed.tm); changed.tm = setTimeout(sendPreview, 150); }
+
+box.addEventListener("input", e => {
+  const el = e.target, d = drafts[branch]; if (!d) return;
+  if (el.id === "d-welcome") d.welcome = el.value;
+  else if (el.id === "d-thanks") d.thanks = el.value;
+  else if (el.id === "d-brand") d.brand = el.value;
+  else if (el.dataset.of){ d.offers[+el.dataset.i][el.dataset.of] = el.value; }
+  else if (el.dataset.link){ d.links = d.links || {}; d.links[el.dataset.link] = el.value.trim(); }
+  else return;
+  changed();
+});
+box.addEventListener("change", async e => {
+  const el = e.target, d = drafts[branch]; if (!d) return;
+  if (el.id === "d-copy" && el.value){
+    if (!drafts[el.value]) await loadBranch(el.value);
+    drafts[branch] = JSON.parse(JSON.stringify(drafts[el.value])); msg = t("copied"); render(); return;
+  }
+  const file = el.files?.[0]; if (!file) return;
+  try {
+    if (el.dataset.img === "logo") d.logo = await shrink(file, 256, 256, 60000);
+    else if (el.dataset.img === "cover") d.cover = await shrink(file, 1000, 520, 200000);
+    else if (el.dataset.oimg != null) d.offers[+el.dataset.oimg].image = await shrink(file, 400, 400, 70000);
+    msg = "";
+  } catch(x){ msg = t("imgErr"); }
+  render();
+});
+document.addEventListener("click", async e => {
+  if (e.target.closest("[data-act=lang]")){ setTimeout(render, 0); return; }
+  const b = e.target.closest("[data-dact]"); if (!b || !box.contains(b)) return;
+  const a = b.dataset.dact, d = drafts[branch];
+  if (a === "branch"){ branch = b.dataset.v; msg = ""; if (!drafts[branch]) await loadBranch(branch); render(); return; }
+  if (a === "state"){ state = b.dataset.v; box.querySelectorAll("[data-dact=state]").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === state)); sendPreview(); return; }
+  if (a === "bg"){ d.bg = b.dataset.v; box.querySelectorAll("[data-dact=bg]").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === d.bg)); changed(); return; }
+  if (a === "rmimg"){ delete d[b.dataset.k]; render(); return; }
+  if (a === "addoffer"){ d.offers = d.offers || []; if (d.offers.length < 3) d.offers.push({ title: "", text: "", price: "" }); render(); return; }
+  if (a === "rmoffer"){ d.offers.splice(+b.dataset.i, 1); render(); return; }
+  if (a === "publish"){
+    busy = true; render();
+    try {
+      const data = clean(d);
+      await setDoc(doc(db, "venues", branch, "public", "design"), { ...data, updatedAt: serverTimestamp() });
+      saved[branch] = JSON.stringify(data); msg = t("published");
+    } catch(x){ console.error(x); msg = t("saveErr"); }
+    busy = false; render();
+  }
+});
+</script>
+
 </body>
 </html>
